@@ -1159,50 +1159,80 @@ function buildPricingHTML() {
     { id:'vr',    label:'Vacation Rental Pricing' },
     { id:'api',   label:'Hotel & VR API Pricing' },
   ];
+
+  const section = (cur, symbol, label, accent) => `
+    <div style="margin-bottom:22px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="font-family:'DM Mono',monospace;font-size:.52rem;letter-spacing:2px;text-transform:uppercase;color:${accent};background:rgba(255,255,255,.05);border:1px solid ${accent}33;border-radius:4px;padding:2px 9px">${symbol} ${label}</div>
+        <div style="flex:1;height:1px;background:var(--bd)"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
+        ${cards.map(c => `
+        <div style="border:1px solid var(--bd);border-radius:8px;overflow:hidden;background:var(--s2)">
+          <img id="pimg_${c.id}_${cur}" src="" style="width:100%;display:block;aspect-ratio:4/3;object-fit:cover">
+          <div style="padding:7px 9px;display:flex;align-items:center;justify-content:space-between;gap:6px;border-top:1px solid var(--bd)">
+            <div style="font-size:.65rem;font-weight:600;color:var(--w);line-height:1.3">${c.label}</div>
+            <button id="pbtn_${c.id}_${cur}" onclick="copyPricingImg2('${c.id}','${cur}')"
+              style="background:${accent};color:#000;border:none;border-radius:4px;font-family:'DM Mono',monospace;font-size:.52rem;font-weight:600;padding:4px 8px;cursor:pointer;flex-shrink:0;white-space:nowrap">
+              Copy
+            </button>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+
   return `<div style="padding:14px 18px">
-    <!-- currency toggle -->
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-      <div style="font-family:'DM Mono',monospace;font-size:.52rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim)">Currency:</div>
-      <button id="pcur_inr" onclick="setPricingCur('inr')"
-        style="font-family:'DM Mono',monospace;font-size:.6rem;padding:3px 10px;border-radius:4px;border:1px solid var(--gold);background:var(--gold);color:#000;cursor:pointer;font-weight:600">₹ INR</button>
-      <button id="pcur_usd" onclick="setPricingCur('usd')"
-        style="font-family:'DM Mono',monospace;font-size:.6rem;padding:3px 10px;border-radius:4px;border:1px solid var(--bd2);background:none;color:var(--dim);cursor:pointer">$ USD</button>
-      <div style="font-size:.58rem;color:var(--dim);margin-left:4px">Tap Copy → paste in WhatsApp</div>
-    </div>
-    <!-- compact card grid -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px">
-      ${cards.map(c => `
-      <div style="border:1px solid var(--bd);border-radius:8px;overflow:hidden;background:var(--s2)">
-        <img id="pimg_${c.id}" src="" style="width:100%;display:block;aspect-ratio:4/3;object-fit:cover">
-        <div style="padding:7px 9px;display:flex;align-items:center;justify-content:space-between;gap:6px;border-top:1px solid var(--bd)">
-          <div style="font-size:.65rem;font-weight:600;color:var(--w);line-height:1.3">${c.label}</div>
-          <button id="pbtn_${c.id}" onclick="copyPricingImg('${c.id}')"
-            style="background:var(--gold);color:#000;border:none;border-radius:4px;font-family:'DM Mono',monospace;font-size:.52rem;font-weight:600;padding:4px 8px;cursor:pointer;flex-shrink:0;white-space:nowrap">
-            Copy
-          </button>
-        </div>
-      </div>`).join('')}
-    </div>
+    <div style="font-size:.65rem;color:var(--dim);margin-bottom:16px">Tap <strong style="color:var(--w)">Copy</strong> on any chart \u2192 paste directly in WhatsApp</div>
+    ${section('inr','\u20b9','INR \u2014 Indian Rupees','var(--gold)')}
+    ${section('usd','$','USD \u2014 US Dollars','var(--grn)')}
   </div>`;
 }
 
-function setPricingCur(cur) {
-  pricingCurrency = cur;
-  document.getElementById('pcur_inr').style.cssText = cur==='inr'
-    ? 'font-family:"DM Mono",monospace;font-size:.62rem;padding:4px 12px;border-radius:4px;border:1px solid var(--gold);background:var(--gold);color:#000;cursor:pointer;font-weight:600'
-    : 'font-family:"DM Mono",monospace;font-size:.62rem;padding:4px 12px;border-radius:4px;border:1px solid var(--bd2);background:none;color:var(--dim);cursor:pointer';
-  document.getElementById('pcur_usd').style.cssText = cur==='usd'
-    ? 'font-family:"DM Mono",monospace;font-size:.62rem;padding:4px 12px;border-radius:4px;border:1px solid var(--gold);background:var(--gold);color:#000;cursor:pointer;font-weight:600'
-    : 'font-family:"DM Mono",monospace;font-size:.62rem;padding:4px 12px;border-radius:4px;border:1px solid var(--bd2);background:none;color:var(--dim);cursor:pointer';
-  ['hotel','vr','api'].forEach(id => {
-    const img = document.getElementById('pimg_'+id);
-    if(img) {
-      const key = id==='api' ? 'api_'+cur : id+'_'+cur;
-      img.src = PRICING_IMGS[key] || '';
-    }
-  });
+function copyPricingImg2(id, cur) {
+  const imgEl = document.getElementById('pimg_'+id+'_'+cur);
+  const btn   = document.getElementById('pbtn_'+id+'_'+cur);
+  if(!imgEl || !imgEl.src) return;
+
+  const origTxt = btn.textContent;
+  const flash = (t,c) => { btn.textContent=t; btn.style.background=c; setTimeout(()=>{ btn.textContent=origTxt; btn.style.background=cur==='inr'?'var(--gold)':'var(--grn)'; },2000); };
+
+  // Try Web Share (mobile)
+  if(navigator.share && navigator.canShare) {
+    fetch(imgEl.src).then(r=>r.blob()).then(blob=>{
+      const file = new File([blob], id+'_'+cur+'.jpg',{type:'image/jpeg'});
+      if(navigator.canShare({files:[file]})){
+        navigator.share({files:[file],title:'Aiosell Pricing'}).then(()=>flash('Shared \u2713','var(--grn)')).catch(()=>{});
+        return;
+      }
+      fallbackCopy(imgEl.src, flash, cur);
+    }).catch(()=>fallbackCopy(imgEl.src, flash, cur));
+  } else {
+    fallbackCopy(imgEl.src, flash, cur);
+  }
 }
 
+function fallbackCopy(src, flash, cur) {
+  const accent = cur==='inr' ? 'var(--gold)' : 'var(--grn)';
+  fetch(src).then(r=>r.blob()).then(blob=>{
+    const item = new ClipboardItem({'image/jpeg':blob,'image/png':blob});
+    navigator.clipboard.write([item]).then(()=>flash('Copied \u2713',accent)).catch(()=>{ window.open(src,'_blank'); flash('Opened \u2192',accent); });
+  }).catch(()=>{ window.open(src,'_blank'); flash('Opened \u2192',accent); });
+}
+function setPricingCur(cur) {
+  // no-op: both currencies always shown, images set on load
+}
+
+function setPricingAllImages() {
+  const IMGS = typeof PRICING_IMGS !== 'undefined' ? PRICING_IMGS : {};
+  const map = {
+    hotel_inr: 'hotel_inr', vr_inr: 'vr_inr', api_inr: 'api_inr',
+    hotel_usd: 'hotel_usd', vr_usd: 'vr_usd', api_usd: 'api_usd',
+  };
+  [['hotel','inr'],['vr','inr'],['api','inr'],['hotel','usd'],['vr','usd'],['api','usd']].forEach(([id,cur]) => {
+    const el = document.getElementById('pimg_'+id+'_'+cur);
+    if(el && IMGS[id+'_'+cur]) el.src = IMGS[id+'_'+cur];
+  });
+}
 function copyPricingImg(id) {
   const key = id==='api' ? 'api_'+pricingCurrency : id+'_'+pricingCurrency;
   const dataUrl = PRICING_IMGS[key];
@@ -2389,7 +2419,7 @@ function openMode(mode) {
     pane.innerHTML = buildVideosHTML();
   } else if(mode === 'pricing' && !pane.innerHTML.trim()) {
     pane.innerHTML = buildPricingHTML();
-    setTimeout(() => setPricingCur('inr'), 0);
+    setTimeout(() => setPricingAllImages(), 0);
   } else if(mode === 'kb' && !pane.innerHTML.trim()) {
     pane.innerHTML = buildKBHTML();
   } else if(mode === 'tpl' && !pane.innerHTML.trim()) {
