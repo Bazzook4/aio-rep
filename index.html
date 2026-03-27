@@ -1177,6 +1177,10 @@ function buildPricingHTML() {
                 style="background:var(--s3);color:var(--dim);border:1px solid var(--bd2);border-radius:4px;font-family:'DM Mono',monospace;font-size:.52rem;font-weight:600;padding:4px 8px;cursor:pointer;flex-shrink:0;white-space:nowrap">
                 View
               </button>
+              <button onclick="sharePricingImg('${c.id}','${cur}')"
+                style="background:var(--s3);color:var(--dim);border:1px solid var(--bd2);border-radius:4px;font-family:'DM Mono',monospace;font-size:.52rem;font-weight:600;padding:4px 8px;cursor:pointer;flex-shrink:0;white-space:nowrap">
+                Share
+              </button>
               <button id="pbtn_${c.id}_${cur}" onclick="copyPricingImg2('${c.id}','${cur}')"
                 style="background:${accent};color:#000;border:none;border-radius:4px;font-family:'DM Mono',monospace;font-size:.52rem;font-weight:600;padding:4px 8px;cursor:pointer;flex-shrink:0;white-space:nowrap">
                 Copy
@@ -1228,28 +1232,57 @@ function copyPricingImg2(id, cur) {
   doCopy(src, flash);
 }
 
+function sharePricingImg(id, cur) {
+  const imgEl = document.getElementById('pimg_'+id+'_'+cur);
+  if(!imgEl || !imgEl.src) return;
+  const src = imgEl.src;
+
+  if(navigator.share) {
+    fetch(src).then(r => r.blob()).then(blob => {
+      const file = new File([blob], id+'_'+cur+'.jpg', {type:'image/jpeg'});
+      const shareData = navigator.canShare && navigator.canShare({files:[file]})
+        ? {files:[file], title:'Aiosell Pricing'}
+        : {title:'Aiosell Pricing', text:'Aiosell Pricing Chart', url: window.location.href};
+      navigator.share(shareData).catch(() => {});
+    }).catch(() => {
+      navigator.share({title:'Aiosell Pricing', url: window.location.href}).catch(()=>{});
+    });
+  } else {
+    // Windows/unsupported: fall back to download
+    doDownload(src, null);
+    alert('Share not supported in this browser. The image has been downloaded instead.');
+  }
+}
+
 function doCopy(src, flash) {
-  if(window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
+  // Must be HTTPS for clipboard API to work
+  const isHttps = location.protocol === 'https:';
+  if(isHttps && window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
     fetch(src).then(r => r.blob()).then(blob => {
       const img = new Image();
+      img.crossOrigin = 'anonymous';
       img.onload = () => {
         const cv = document.createElement('canvas');
-        cv.width = img.width; cv.height = img.height;
+        cv.width = img.naturalWidth; cv.height = img.naturalHeight;
         cv.getContext('2d').drawImage(img, 0, 0);
         cv.toBlob(png => {
           const item = new ClipboardItem({'image/png': png});
           navigator.clipboard.write([item])
             .then(() => flash && flash('Copied ✓', 'var(--grn)'))
-            .catch(() => doDownload(src, flash));
+            .catch(err => {
+              console.warn('Clipboard write failed:', err);
+              doDownload(src, flash);
+            });
         }, 'image/png');
       };
+      img.onerror = () => doDownload(src, flash);
       img.src = URL.createObjectURL(blob);
     }).catch(() => doDownload(src, flash));
     return;
   }
+  // Not HTTPS or no clipboard support
   doDownload(src, flash);
 }
-
 function doDownload(src, flash) {
   const a = document.createElement('a');
   a.href = src; a.download = 'aiosell-pricing.jpg';
