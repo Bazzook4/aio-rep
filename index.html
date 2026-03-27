@@ -309,8 +309,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--w);min-he
   <div class="content-area" id="contentArea">
     <!-- PITCH PANE -->
     <div class="content-pane" id="pane_pitch" style="overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--bd) transparent">
-      <div id="pitchRight">
-      </div>
+      <div id="pitchRight"></div>
+    </div>
     <!-- OTHER PANES (filled dynamically) -->
     <div class="content-pane" id="pane_rms"></div>
     <div class="content-pane" id="pane_videos"></div>
@@ -2491,8 +2491,9 @@ function openMode(mode) {
   pane.scrollTop = 0;
 
   // Build content if empty
-  if(mode === 'pitch' && !pane.innerHTML.trim()) {
-    pane.innerHTML = buildPitchGuide();
+  if(mode === 'pitch') {
+    const pr = document.getElementById('pitchRight');
+    if(pr && !pr.innerHTML.trim()) pr.innerHTML = buildPitchGuide();
   } else if(mode === 'rms' && !pane.innerHTML.trim()) {
     pane.innerHTML = buildRMSTabHTML();
     setTimeout(()=>{ buildSlabs(); showDemand('city'); showGeo('delhi'); }, 60);
