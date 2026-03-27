@@ -1199,32 +1199,63 @@ function copyPricingImg2(id, cur) {
   const btn   = document.getElementById('pbtn_'+id+'_'+cur);
   if(!imgEl || !imgEl.src) return;
 
+  const accent = cur==='inr' ? 'var(--gold)' : 'var(--grn)';
   const origTxt = btn.textContent;
-  const flash = (t,c) => { btn.textContent=t; btn.style.background=c; setTimeout(()=>{ btn.textContent=origTxt; btn.style.background=cur==='inr'?'var(--gold)':'var(--grn)'; },2000); };
+  const flash = (t,bg) => {
+    btn.textContent = t; btn.style.background = bg;
+    setTimeout(() => { btn.textContent = origTxt; btn.style.background = accent; }, 2200);
+  };
 
-  // Try Web Share (mobile)
-  if(navigator.share && navigator.canShare) {
-    fetch(imgEl.src).then(r=>r.blob()).then(blob=>{
-      const file = new File([blob], id+'_'+cur+'.jpg',{type:'image/jpeg'});
-      if(navigator.canShare({files:[file]})){
-        navigator.share({files:[file],title:'Aiosell Pricing'}).then(()=>flash('Shared \u2713','var(--grn)')).catch(()=>{});
+  const src = imgEl.src;
+  const isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
+
+  // Mobile: Web Share -> WhatsApp etc.
+  if(isMobile && navigator.share && navigator.canShare) {
+    fetch(src).then(r => r.blob()).then(blob => {
+      const file = new File([blob], id+'_'+cur+'.jpg', {type:'image/jpeg'});
+      if(navigator.canShare({files:[file]})) {
+        navigator.share({files:[file], title:'Aiosell Pricing'})
+          .then(() => flash('Shared ✓', 'var(--grn)'))
+          .catch(() => doCopy(src, flash));
         return;
       }
-      fallbackCopy(imgEl.src, flash, cur);
-    }).catch(()=>fallbackCopy(imgEl.src, flash, cur));
-  } else {
-    fallbackCopy(imgEl.src, flash, cur);
+      doCopy(src, flash);
+    }).catch(() => doCopy(src, flash));
+    return;
   }
+
+  // Desktop: copy to clipboard or download
+  doCopy(src, flash);
 }
 
-function fallbackCopy(src, flash, cur) {
-  const accent = cur==='inr' ? 'var(--gold)' : 'var(--grn)';
-  fetch(src).then(r=>r.blob()).then(blob=>{
-    const item = new ClipboardItem({'image/jpeg':blob,'image/png':blob});
-    navigator.clipboard.write([item]).then(()=>flash('Copied \u2713',accent)).catch(()=>{ window.open(src,'_blank'); flash('Opened \u2192',accent); });
-  }).catch(()=>{ window.open(src,'_blank'); flash('Opened \u2192',accent); });
+function doCopy(src, flash) {
+  if(window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
+    fetch(src).then(r => r.blob()).then(blob => {
+      const img = new Image();
+      img.onload = () => {
+        const cv = document.createElement('canvas');
+        cv.width = img.width; cv.height = img.height;
+        cv.getContext('2d').drawImage(img, 0, 0);
+        cv.toBlob(png => {
+          const item = new ClipboardItem({'image/png': png});
+          navigator.clipboard.write([item])
+            .then(() => flash && flash('Copied ✓', 'var(--grn)'))
+            .catch(() => doDownload(src, flash));
+        }, 'image/png');
+      };
+      img.src = URL.createObjectURL(blob);
+    }).catch(() => doDownload(src, flash));
+    return;
+  }
+  doDownload(src, flash);
 }
 
+function doDownload(src, flash) {
+  const a = document.createElement('a');
+  a.href = src; a.download = 'aiosell-pricing.jpg';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  if(flash) flash('Downloaded ↓', 'var(--blu)');
+}
 function viewPricingImg(id, cur) {
   const imgEl = document.getElementById('pimg_'+id+'_'+cur);
   if(!imgEl || !imgEl.src) return;
