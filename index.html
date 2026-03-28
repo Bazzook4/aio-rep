@@ -312,16 +312,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--w);min-he
 
 <div class="app-shell">
   <nav class="sidenav" id="sideNav">
-    <div class="sidenav-item" id="nav_rms" onclick="openMode('rms')">
-      <span class="sidenav-icon">⚡</span><span class="sidenav-label">RMS</span>
-    </div>
-    <div class="sidenav-item" id="nav_pitch" onclick="openMode('pitch')">
-      <span class="sidenav-icon">▶</span><span class="sidenav-label">Pitch</span>
-    </div>
-    <div class="sidenav-divider"></div>
-    <div class="sidenav-item" id="nav_videos" onclick="openMode('videos')">
-      <span class="sidenav-icon">🎬</span><span class="sidenav-label">Videos</span>
-    </div>
     <div class="sidenav-item" id="nav_pricing" onclick="openMode('pricing')">
       <span class="sidenav-icon">₹</span><span class="sidenav-label">Pricing</span>
     </div>
@@ -331,6 +321,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--w);min-he
     </div>
     <div class="sidenav-item" id="nav_tpl" onclick="openMode('tpl')">
       <span class="sidenav-icon">✉️</span><span class="sidenav-label">Templates</span>
+    </div>
+    <div class="sidenav-item" id="nav_videos" onclick="openMode('videos')">
+      <span class="sidenav-icon">🎬</span><span class="sidenav-label">Videos</span>
+    </div>
+    <div class="sidenav-divider"></div>
+    <div class="sidenav-item" id="nav_pitch" onclick="openMode('pitch')">
+      <span class="sidenav-icon">▶</span><span class="sidenav-label">Pitch</span>
+    </div>
+    <div class="sidenav-item" id="nav_rms" onclick="openMode('rms')">
+      <span class="sidenav-icon">⚡</span><span class="sidenav-label">RMS</span>
     </div>
   </nav>
 
@@ -1436,10 +1436,6 @@ let tplSearch = '';
 
 function buildTPLHTML() {
   return `<div>
-    <div style="position:sticky;top:46px;z-index:100;background:var(--s1);border-bottom:1px solid var(--bd);padding:8px 14px">
-      <input id="tplSearchBox" type="text" placeholder="🔍  Search templates…" oninput="tplDoSearch(this.value)"
-        style="width:100%;box-sizing:border-box;background:var(--s2);border:1px solid var(--bd2);border-radius:6px;color:var(--w);font-size:.7rem;padding:6px 10px;outline:none">
-    </div>
     <div id="tplList" style="padding:8px 14px;display:flex;flex-direction:column;gap:4px">
       ${TPL_CATEGORIES.map((cat, ci) => `
       <div class="tpl-cat" id="tplc_${cat.id}">
@@ -1638,14 +1634,10 @@ let kbSelected = new Set(); // selected article URLs
 
 function buildKBHTML() {
   return `<div>
-    <div style="position:sticky;top:46px;z-index:100;background:var(--s1);border-bottom:1px solid var(--bd);padding:8px 14px;display:flex;align-items:center;gap:8px">
-      <input id="kbSearchBox" type="text" placeholder="🔍  Search articles…" oninput="kbDoSearch(this.value)"
-        style="flex:1;background:var(--s2);border:1px solid var(--bd2);border-radius:6px;color:var(--w);font-size:.7rem;padding:6px 10px;outline:none;min-width:0">
-      <div id="kbCopyBar" style="display:none;align-items:center;gap:6px;flex-shrink:0">
-        <span id="kbBarLabel" style="font-family:'DM Mono',monospace;font-size:.52rem;color:var(--dim);white-space:nowrap"></span>
-        <button onclick="kbClearSel()" style="background:none;border:1px solid var(--bd2);border-radius:4px;color:var(--dim);font-family:'DM Mono',monospace;font-size:.52rem;padding:3px 8px;cursor:pointer">Clear</button>
-        <button id="kbCopyBtn" onclick="kbCopyLinks()" style="background:var(--gold);color:#000;border:none;border-radius:5px;font-family:'DM Mono',monospace;font-size:.56rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;cursor:pointer">Copy</button>
-      </div>
+    <div id="kbCopyBar" style="display:none;position:sticky;top:46px;z-index:100;background:var(--s1);border-bottom:1px solid var(--bd);padding:8px 14px;align-items:center;gap:6px">
+      <span id="kbBarLabel" style="font-family:'DM Mono',monospace;font-size:.52rem;color:var(--dim);flex:1;white-space:nowrap"></span>
+      <button onclick="kbClearSel()" style="background:none;border:1px solid var(--bd2);border-radius:4px;color:var(--dim);font-family:'DM Mono',monospace;font-size:.52rem;padding:3px 8px;cursor:pointer">Clear</button>
+      <button id="kbCopyBtn" onclick="kbCopyLinks()" style="background:var(--gold);color:#000;border:none;border-radius:5px;font-family:'DM Mono',monospace;font-size:.56rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;cursor:pointer">Copy</button>
     </div>
     <div id="kbList" style="padding:8px 14px;display:flex;flex-direction:column;gap:4px">
       ${KB_CATEGORIES.map((cat, ci) => `
