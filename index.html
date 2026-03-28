@@ -268,6 +268,34 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--w);min-he
 .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:1160px){.pgrid{grid-template-columns:1fr}}
 
+/* ── DROPDOWN CATEGORIES (Videos / KB / Templates) ── */
+.vid-drop-hd,.kb-drop-hd,.tpl-drop-hd{
+  font-family:'DM Mono',monospace;font-size:.52rem;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;
+  display:flex;align-items:center;gap:6px;padding:8px 6px;cursor:pointer;user-select:none;
+  border-radius:5px;transition:background .1s
+}
+.vid-drop-hd:hover,.kb-drop-hd:hover,.tpl-drop-hd:hover{background:var(--s2)}
+.vid-drop-arr,.kb-drop-arr,.tpl-drop-arr{font-size:.62rem;flex-shrink:0;width:14px}
+
+/* ── VIDEO ROW ── */
+.vid-row{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:5px;cursor:pointer;transition:background .1s;user-select:none}
+.vid-row:hover{background:var(--s2)}
+.vid-row-sel{background:rgba(50,200,138,.07)!important}
+.vid-row-sugg .vid-row-title{color:var(--gold)}
+.vid-row-check{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--bd2);display:flex;align-items:center;justify-content:center;font-size:.52rem;color:#000;font-weight:700;flex-shrink:0;transition:all .12s}
+.vid-row-sel .vid-row-check{border-color:var(--grn);background:var(--grn)}
+.vid-row-title{flex:1;font-size:.69rem;color:var(--w);line-height:1.3}
+
+/* ── KB ROW ── */
+.kb-row{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:5px;cursor:pointer;transition:background .1s;user-select:none}
+.kb-row:hover{background:var(--s2)}
+.kb-sel{background:rgba(50,200,138,.07)!important}
+.kb-sel .kb-chk{border-color:var(--grn)!important;background:var(--grn)!important}
+
+/* ── TEMPLATE ROW ── */
+.tpl-row{display:flex;align-items:center;gap:10px;padding:8px 8px;border-radius:5px;cursor:pointer;transition:background .1s;user-select:none}
+.tpl-row:hover{background:var(--s2)}
+
 @media(max-width:700px){#slabOutput ~ div,#slabOutput{grid-column:1/-1!important}}
 @keyframes up{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 .au{animation:up .2s ease both}
@@ -1412,27 +1440,33 @@ function buildTPLHTML() {
       <input id="tplSearchBox" type="text" placeholder="🔍  Search templates…" oninput="tplDoSearch(this.value)"
         style="width:100%;box-sizing:border-box;background:var(--s2);border:1px solid var(--bd2);border-radius:6px;color:var(--w);font-size:.7rem;padding:6px 10px;outline:none">
     </div>
-    <div style="padding:7px 14px 3px;font-size:.6rem;color:var(--dim)">Tap any template card to copy it instantly.</div>
-    <div id="tplList" style="padding:10px 14px;display:flex;flex-direction:column;gap:16px">
-      ${TPL_CATEGORIES.map(cat => `
+    <div id="tplList" style="padding:8px 14px;display:flex;flex-direction:column;gap:4px">
+      ${TPL_CATEGORIES.map((cat, ci) => `
       <div class="tpl-cat" id="tplc_${cat.id}">
-        <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:2px;text-transform:uppercase;color:${cat.color};margin-bottom:8px;display:flex;align-items:center;gap:7px">
+        <div class="tpl-drop-hd" style="color:${cat.color}" onclick="toggleTPLCat('${cat.id}')">
+          <span class="tpl-drop-arr" id="tplarr_${cat.id}">${ci===0?'▾':'▸'}</span>
           ${cat.icon} ${cat.label}
-          <span style="flex:1;height:1px;background:var(--bd)"></span>
+          <span style="font-family:'DM Mono',monospace;font-size:.46rem;color:var(--dim);margin-left:auto">(${cat.templates.length})</span>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px" id="tplarr_${cat.id}">
+        <div class="tpl-drop-body" id="tplbody_${cat.id}" style="display:${ci===0?'flex':'none'};flex-direction:column;gap:0" id2="tplarr_${cat.id}">
           ${cat.templates.map(t => `
-          <div class="tpl-card" id="tplcard_${t.id}" data-text="${t.text.replace(/\\/g,'\\\\').replace(/"/g,'&quot;').replace(/\n/g,'\\n')}" onclick="tplCopy('${t.id}',this)">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px">
-              <div style="font-size:.72rem;font-weight:600;color:var(--w);line-height:1.3">${t.label}</div>
-              <div class="tpl-copy-badge" id="tplbadge_${t.id}" style="font-family:'DM Mono',monospace;font-size:.48rem;font-weight:600;letter-spacing:.5px;background:${cat.color};color:#000;border-radius:4px;padding:3px 9px;flex-shrink:0;border:none;cursor:pointer">Copy</div>
-            </div>
-            <div style="font-size:.62rem;color:var(--dim);line-height:1.5;max-height:54px;overflow:hidden;mask-image:linear-gradient(to bottom,var(--w) 60%,transparent)">${t.text.replace(/\n/g,'<br>').replace(/https?:\/\/\S+/g, u => '<span style="color:var(--blu)">'+u+'</span>')}</div>
+          <div class="tpl-row" id="tplcard_${t.id}" data-text="${t.text.replace(/\\/g,'\\\\').replace(/"/g,'&quot;').replace(/\n/g,'\\n')}" onclick="tplCopy('${t.id}',this)">
+            <div style="flex:1;font-size:.7rem;font-weight:500;color:var(--w);line-height:1.3">${t.label}</div>
+            <div class="tpl-copy-badge" id="tplbadge_${t.id}" style="font-family:'DM Mono',monospace;font-size:.48rem;font-weight:600;letter-spacing:.5px;background:${cat.color};color:#000;border-radius:4px;padding:3px 9px;flex-shrink:0;cursor:pointer">Copy</div>
           </div>`).join('')}
         </div>
       </div>`).join('')}
     </div>
   </div>`;
+}
+
+function toggleTPLCat(id) {
+  const body = document.getElementById('tplbody_'+id);
+  const arr  = document.getElementById('tplarr_'+id);
+  if(!body) return;
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'flex';
+  if(arr) arr.textContent = open ? '▸' : '▾';
 }
 
 function tplCopy(id, el) {
@@ -1461,8 +1495,11 @@ function tplDoSearch(q) {
       el.style.display = match ? '' : 'none';
       if(match) catHas = true;
     });
-    const catEl = document.getElementById('tplc_'+cat.id);
+    const catEl  = document.getElementById('tplc_'+cat.id);
+    const bodyEl = document.getElementById('tplbody_'+cat.id);
+    const arrEl  = document.getElementById('tplarr_'+cat.id);
     if(catEl) catEl.style.display = (!tplSearch || catHas) ? '' : 'none';
+    if(tplSearch && catHas && bodyEl) { bodyEl.style.display = 'flex'; if(arrEl) arrEl.textContent = '▾'; }
   });
 }
 
@@ -1602,7 +1639,7 @@ let kbSelected = new Set(); // selected article URLs
 function buildKBHTML() {
   return `<div>
     <div style="position:sticky;top:46px;z-index:100;background:var(--s1);border-bottom:1px solid var(--bd);padding:8px 14px;display:flex;align-items:center;gap:8px">
-      <input id="kbSearchBox" type="text" placeholder="🔍  Search 53 articles…" oninput="kbDoSearch(this.value)"
+      <input id="kbSearchBox" type="text" placeholder="🔍  Search articles…" oninput="kbDoSearch(this.value)"
         style="flex:1;background:var(--s2);border:1px solid var(--bd2);border-radius:6px;color:var(--w);font-size:.7rem;padding:6px 10px;outline:none;min-width:0">
       <div id="kbCopyBar" style="display:none;align-items:center;gap:6px;flex-shrink:0">
         <span id="kbBarLabel" style="font-family:'DM Mono',monospace;font-size:.52rem;color:var(--dim);white-space:nowrap"></span>
@@ -1610,33 +1647,37 @@ function buildKBHTML() {
         <button id="kbCopyBtn" onclick="kbCopyLinks()" style="background:var(--gold);color:#000;border:none;border-radius:5px;font-family:'DM Mono',monospace;font-size:.56rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;cursor:pointer">Copy</button>
       </div>
     </div>
-    <div id="kbList" style="padding:12px 14px;display:flex;flex-direction:column;gap:16px">
-      ${KB_CATEGORIES.map(cat => `
+    <div id="kbList" style="padding:8px 14px;display:flex;flex-direction:column;gap:4px">
+      ${KB_CATEGORIES.map((cat, ci) => `
       <div class="kb-cat" id="kbc_${cat.id}">
-        <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:2px;text-transform:uppercase;color:${cat.color};margin-bottom:8px;display:flex;align-items:center;gap:7px">
+        <div class="kb-drop-hd" style="color:${cat.color}" onclick="toggleKBCat('${cat.id}')">
+          <span class="kb-drop-arr" id="kbarr_${cat.id}">${ci===0?'▾':'▸'}</span>
           ${cat.icon} ${cat.label}
-          <span style="flex:1;height:1px;background:var(--bd)"></span>
+          <span style="font-family:'DM Mono',monospace;font-size:.46rem;color:var(--dim);margin-left:auto">(${cat.articles.length})</span>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px" id="kbarts_${cat.id}">
+        <div class="kb-drop-body" id="kbbody_${cat.id}" style="display:${ci===0?'flex':'none'};flex-direction:column;gap:0">
           ${cat.articles.map(a => `
-          <div class="kb-art" id="kba_${btoa(a.url).replace(/[^a-zA-Z0-9]/g,'')}" data-url="${a.url}" data-title="${a.title.replace(/"/g,'&quot;')}" onclick="kbToggle(this)">
-            <div style="display:flex;align-items:flex-start;gap:7px;height:100%">
-              <div class="kb-chk" style="margin-top:2px"></div>
-              <div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between;height:100%;gap:6px">
-                <div style="font-size:.68rem;color:var(--w);line-height:1.4">${a.title}</div>
-                <div style="display:flex;gap:4px;align-items:center">
-                  <a href="${a.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()"
-                    style="font-family:'DM Mono',monospace;font-size:.46rem;color:var(--dim);text-decoration:none;border:1px solid var(--bd);border-radius:3px;padding:2px 6px">open ↗</a>
-                  <button onclick="event.stopPropagation();kbCopyOne(this,'${a.url}','${a.title.replace(/'/g,'\'')}')"
-                    style="font-family:'DM Mono',monospace;font-size:.46rem;color:#000;background:var(--gold);border:none;border-radius:3px;padding:2px 7px;cursor:pointer;font-weight:600">Copy</button>
-                </div>
-              </div>
-            </div>
+          <div class="kb-row" id="kba_${btoa(a.url).replace(/[^a-zA-Z0-9]/g,'')}" data-url="${a.url}" data-title="${a.title.replace(/"/g,'&quot;')}" onclick="kbToggle(this)">
+            <div class="kb-chk"></div>
+            <div style="flex:1;font-size:.68rem;color:var(--w);line-height:1.3">${a.title}</div>
+            <a href="${a.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()"
+              style="font-family:'DM Mono',monospace;font-size:.46rem;color:var(--dim);text-decoration:none;border:1px solid var(--bd);border-radius:3px;padding:2px 6px;flex-shrink:0">open ↗</a>
+            <button onclick="event.stopPropagation();kbCopyOne(this,'${a.url}','${a.title.replace(/'/g,"\\x27")}')"
+              style="font-family:'DM Mono',monospace;font-size:.46rem;color:#000;background:var(--gold);border:none;border-radius:3px;padding:2px 7px;cursor:pointer;font-weight:600;flex-shrink:0">Copy</button>
           </div>`).join('')}
         </div>
       </div>`).join('')}
     </div>
   </div>`;
+}
+
+function toggleKBCat(id) {
+  const body = document.getElementById('kbbody_'+id);
+  const arr  = document.getElementById('kbarr_'+id);
+  if(!body) return;
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'flex';
+  if(arr) arr.textContent = open ? '▸' : '▾';
 }
 
 function kbCopyOne(btn, url, title) {
@@ -1678,7 +1719,7 @@ function kbUpdateBar() {
 
 function kbClearSel() {
   kbSelected.clear();
-  document.querySelectorAll('.kb-art').forEach(el => { el.classList.remove('kb-sel'); el.querySelector('.kb-chk').textContent = ''; });
+  document.querySelectorAll('.kb-row').forEach(el => { el.classList.remove('kb-sel'); el.querySelector('.kb-chk').textContent = ''; });
   kbUpdateBar();
 }
 
@@ -1707,7 +1748,10 @@ function kbDoSearch(q) {
       if(match) catHasMatch = true;
     });
     const catEl = document.getElementById('kbc_' + cat.id);
+    const bodyEl = document.getElementById('kbbody_' + cat.id);
+    const arrEl  = document.getElementById('kbarr_' + cat.id);
     if(catEl) catEl.style.display = (!kbSearch || catHasMatch) ? 'block' : 'none';
+    if(kbSearch && catHasMatch && bodyEl) { bodyEl.style.display = 'flex'; if(arrEl) arrEl.textContent = '▾'; }
   });
 }
 
@@ -1740,7 +1784,7 @@ function toggleVid(id, e) {
   else selectedVids.add(id);
   const card = document.getElementById('vc_'+id);
   const chk  = document.getElementById('vchk_'+id);
-  if(card) card.classList.toggle('vid-sel', selectedVids.has(id));
+  if(card) card.classList.toggle('vid-row-sel', selectedVids.has(id));
   if(chk)  chk.textContent = selectedVids.has(id) ? '✓' : '';
   updateVidBar();
 }
@@ -1772,8 +1816,8 @@ function flashVidBtn() {
 
 function clearVidSel() {
   selectedVids.clear();
-  document.querySelectorAll('.vid-card').forEach(c=>c.classList.remove('vid-sel'));
-  document.querySelectorAll('.vid-check').forEach(c=>c.textContent='');
+  document.querySelectorAll('.vid-row').forEach(c=>c.classList.remove('vid-row-sel'));
+  document.querySelectorAll('.vid-row-check').forEach(c=>c.textContent='');
   updateVidBar();
 }
 
@@ -1787,40 +1831,61 @@ function switchVidSubTab(tab) {
   document.getElementById('vlist_support').style.display = tab==='support' ? 'block' : 'none';
 }
 
-function buildVideosHTML() {
-  const demoHTML = VIDEO_SECTIONS.map(s => {
-    const vids = s.filter();
-    if(!vids.length) return '';
-    return `<div class="vid-section">
-      <div class="vid-section-hd ${s.hdClass}">${s.label}</div>
-      <div class="vid-grid">${vids.map(vidCard).join('')}</div>
-    </div>`;
-  }).join('');
+function vidRow(v) {
+  const isSugg = SUGGESTED[sel].includes(v.id);
+  const checked = selectedVids.has(v.id);
+  return `<div class="vid-row ${isSugg?'vid-row-sugg':''} ${checked?'vid-row-sel':''}" id="vc_${v.id}" onclick="toggleVid('${v.id}',event)">
+    <div class="vid-row-check" id="vchk_${v.id}">${checked?'✓':''}</div>
+    <div class="vid-row-title">${isSugg?'★ ':''}<span id="vtitle_${v.id}">${v.title}</span></div>
+    <a href="https://youtu.be/${v.id}" target="_blank" rel="noopener" onclick="event.stopPropagation()"
+      style="font-family:'DM Mono',monospace;font-size:.46rem;color:var(--dim);text-decoration:none;border:1px solid var(--bd);border-radius:3px;padding:2px 6px;flex-shrink:0">open ↗</a>
+  </div>`;
+}
 
-  const supportHTML = SUPPORT_VIDEO_SECTIONS.map(s => {
+function buildVidSectionRows(sections) {
+  return sections.map((s, si) => {
     const vids = s.filter();
     if(!vids.length) return '';
-    return `<div class="vid-section">
-      <div class="vid-section-hd ${s.hdClass}">${s.label}</div>
-      <div class="vid-grid">${vids.map(vidCard).join('')}</div>
+    const isOpen = si === 0;
+    return `<div class="vid-drop-cat" id="vdcat_${s.key}">
+      <div class="vid-drop-hd ${s.hdClass}" onclick="toggleVidCat('${s.key}')">
+        <span class="vid-drop-arr" id="vdarr_${s.key}">${isOpen?'▾':'▸'}</span>
+        ${s.label}
+        <span style="font-family:'DM Mono',monospace;font-size:.46rem;color:var(--dim);margin-left:auto">(${vids.length})</span>
+      </div>
+      <div class="vid-drop-body" id="vdbody_${s.key}" style="display:${isOpen?'flex':'none'};flex-direction:column;gap:0">
+        ${vids.map(vidRow).join('')}
+      </div>
     </div>`;
   }).join('');
+}
+
+function toggleVidCat(key) {
+  const body = document.getElementById('vdbody_'+key);
+  const arr  = document.getElementById('vdarr_'+key);
+  if(!body) return;
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'flex';
+  if(arr) arr.textContent = open ? '▸' : '▾';
+}
+
+function buildVideosHTML() {
+  const demoHTML  = buildVidSectionRows(VIDEO_SECTIONS);
+  const suppHTML  = buildVidSectionRows(SUPPORT_VIDEO_SECTIONS);
 
   return `<div>
-    <!-- sticky copy bar -->
     <div id="vidCopyBar" style="display:none;position:sticky;top:46px;z-index:100;background:var(--s1);border-bottom:1px solid var(--bd);padding:8px 18px;align-items:center;gap:10px">
       <span id="vidBarLabel" style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--dim);flex:1"></span>
       <button onclick="clearVidSel()" style="background:none;border:1px solid var(--bd2);border-radius:4px;color:var(--dim);font-family:'DM Mono',monospace;font-size:.58rem;padding:4px 10px;cursor:pointer">Clear</button>
       <button id="vidCopyBtn" onclick="copyVidLinks()" style="background:var(--gold);color:#000;border:none;border-radius:5px;font-family:'DM Mono',monospace;font-size:.6rem;font-weight:500;letter-spacing:1px;text-transform:uppercase;padding:6px 14px;cursor:pointer">Copy Links</button>
     </div>
-    <!-- sub-tabs -->
     <div style="display:flex;gap:6px;padding:10px 18px 0;border-bottom:1px solid var(--bd)">
       <button id="vsub_demo" class="tab-btn on" onclick="switchVidSubTab('demo')" style="font-size:.62rem;padding:5px 14px">▶ Product Demos</button>
       <button id="vsub_support" class="tab-btn" onclick="switchVidSubTab('support')" style="font-size:.62rem;padding:5px 14px">🛠 Support</button>
     </div>
-    <div style="padding:6px 18px 4px;font-size:.6rem;color:var(--dim)">Tap a video to select it, then copy all links to share on WhatsApp.</div>
-    <div id="vlist_demo" class="pw">${demoHTML}</div>
-    <div id="vlist_support" class="pw" style="display:none">${supportHTML}</div>
+    <div style="padding:6px 18px 4px;font-size:.6rem;color:var(--dim)">Tap a video to select, then copy links to share on WhatsApp.</div>
+    <div id="vlist_demo" style="padding:8px 14px;display:flex;flex-direction:column;gap:6px">${demoHTML}</div>
+    <div id="vlist_support" style="padding:8px 14px;display:flex;flex-direction:column;gap:6px;display:none">${suppHTML}</div>
   </div>`;
 }
 
@@ -2509,8 +2574,8 @@ function openMode(mode) {
   }
 }
 
-// Auto-open RMS on load
-openMode('rms');
+// Auto-open Pricing on load
+openMode('pricing');
 </script>
 </body>
 </html>
