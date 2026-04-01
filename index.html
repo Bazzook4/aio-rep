@@ -2167,63 +2167,8 @@ const DEMAND_EVENTS = {
 
 
 
-function buildSlabs() {
-  const rooms = parseInt(document.getElementById('s_rooms')?.value) || 12;
-  const base  = parseFloat(document.getElementById('s_base')?.value) || 2000;
-  const m1 = parseFloat(document.getElementById('s_m1')?.value) || 1.0;
-  const m2 = parseFloat(document.getElementById('s_m2')?.value) || 1.3;
-  const m3 = parseFloat(document.getElementById('s_m3')?.value) || 1.7;
-  const m4 = parseFloat(document.getElementById('s_m4')?.value) || 2.2;
-  const fmt = n => '₹' + Math.round(n).toLocaleString('en-IN');
-
-  const r60 = Math.max(2, Math.round(rooms * 0.60));
-  const r80 = Math.max(r60 + 1, Math.round(rooms * 0.80));
-
-  // Per-room increments between slab transitions
-  // Slab 1→2: rate rises (m2-m1)*base over r60 rooms
-  // Slab 2→3: rate rises (m3-m2)*base over (r80-r60) rooms
-  // Slab 3→4: rate rises (m4-m3)*base over (rooms-r80) rooms
-  const inc1 = r60 > 1       ? (m2 - m1) * base / r60             : 0;
-  const inc2 = (r80 - r60) > 0 ? (m3 - m2) * base / (r80 - r60)  : 0;
-  const inc3 = (rooms - r80) > 0 ? (m4 - m3) * base / (rooms - r80) : 0;
-
-  const slabs = [
-    { label:'Slab 1', trigger:'0 – 1 room sold',              color:'var(--grn)', mul:m1, inc: inc1, incRooms: r60,         desc:'Hotel is empty or has its very first booking. Priority is to fill the room — base rate applies. No reason to hold a premium price yet.' },
-    { label:'Slab 2', trigger:`${r60} rooms sold — 60% full`, color:'var(--gold)', mul:m2, inc: inc2, incRooms: r80 - r60,  desc:'More than half full. Demand is clearly there. Rate nudges up — guests are now competing for fewer available rooms.' },
-    { label:'Slab 3', trigger:`${r80} rooms sold — 80% full`, color:'#F5A623',     mul:m3, inc: inc3, incRooms: rooms - r80, desc:'Nearly full. Scarcity kicks in. The remaining rooms command a meaningful premium — guests booking now know options are running out.' },
-    { label:'Slab 4', trigger:`${rooms} rooms — Full house`,   color:'var(--red)',  mul:m4, inc: null, incRooms: 0,          desc:'Completely sold out. Maximum rate. Any last-minute demand on walk-in or overflow should be captured at the highest possible price.' },
-  ];
-
-  const out = document.getElementById('slabOutput');
-  if (!out) return;
-
-  out.innerHTML = `<div style="display:flex;flex-direction:column;gap:6px">
-    ${slabs.map(s => `<div style="background:var(--s2);border:1px solid var(--bd);border-left:3px solid ${s.color};border-radius:0 7px 7px 0;padding:10px 12px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap">
-        <div style="font-family:'DM Mono',monospace;font-size:.7rem;font-weight:500;color:${s.color};min-width:52px">${s.label}</div>
-        <div style="font-size:.75rem;font-weight:600;color:var(--w);flex:1">${s.trigger}</div>
-        <div style="font-family:'DM Mono',monospace;font-size:.85rem;font-weight:700;color:${s.color}">${fmt(base * s.mul)}</div>
-        <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--grn);background:var(--gnd);border:1px solid rgba(50,200,138,.2);padding:1px 6px;border-radius:3px">+${Math.round((s.mul - 1) * 100)}%</div>
-      </div>
-      <div style="font-size:.67rem;color:var(--dim);line-height:1.45;margin-bottom:${s.inc !== null ? '6px' : '0'}">${s.desc}</div>
-      ${s.inc !== null ? `<div style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.04);border:1px solid var(--bd2);border-radius:4px;padding:3px 8px">
-        <span style="font-family:'DM Mono',monospace;font-size:.58rem;color:${s.color}">+${fmt(s.inc)}</span>
-        <span style="font-size:.58rem;color:var(--dim)">per room sold over next ${s.incRooms} room${s.incRooms!==1?'s':''}</span>
-      </div>` : ''}
-    </div>`).join('')}
-  </div>
-  <div style="font-size:.65rem;color:var(--dim);margin-top:10px;line-height:1.6;padding:9px 12px;background:var(--s3);border-radius:6px;border-left:2px solid var(--gold)">
-    💡 <strong style="color:var(--w)">How the J-curve works:</strong>
-    At ${rooms} rooms with ₹${base.toLocaleString('en-IN')} base —
-    first booking at <strong style="color:var(--grn)">${fmt(base * m1)}</strong> ·
-    60% full → <strong style="color:var(--gold)">${fmt(base * m2)}</strong> ·
-    80% full → <strong style="color:#F5A623">${fmt(base * m3)}</strong> ·
-    Full house → <strong style="color:var(--red)">${fmt(base * m4)}</strong>.
-    The rate doesn't jump — it accelerates. Every room sold pushes the price of the next one slightly higher.
-  </div>`;
-
-  drawJCurve(rooms, base, m1, m2, m3, m4);
-}
+// buildSlabs is now driven by buildJAdvisor — kept as alias for compat
+function buildSlabs() { buildJAdvisor(); }
 
 // ═══════════════════════════════════
 // J-CURVE ADVISOR
@@ -2263,107 +2208,143 @@ function getTotalDiscount() {
 }
 
 function buildJAdvisor() {
-  const inv   = parseFloat(document.getElementById('jc_inv')?.value)   || 3000;
-  const rooms = parseInt(document.getElementById('jc_rooms')?.value)    || 20;
-  const peak  = parseFloat(document.getElementById('jc_peak')?.value)   || 6000;
-  const fmt   = n => '₹' + Math.round(n).toLocaleString('en-IN');
+  const inv       = parseFloat(document.getElementById('jc_inv')?.value)     || 3000;
+  const rooms     = parseInt(document.getElementById('jc_rooms')?.value)      || 20;
+  const peakPct   = parseFloat(document.getElementById('jc_peakpct')?.value)  || 100;
+  const peak      = inv * (1 + peakPct / 100);
+  const fmt       = n => '₹' + Math.round(n).toLocaleString('en-IN');
 
-  const discFactor  = getTotalDiscount();           // e.g. 0.90 for 10% discount
-  const effectiveBase = inv * discFactor;           // base after discount
+  // Update display-only peak field
+  const peakDisp = document.getElementById('jc_peak_display');
+  if(peakDisp) peakDisp.textContent = fmt(peak);
+
+  const discFactor    = getTotalDiscount();
+  const effectiveBase = inv * discFactor;
   const totalDiscPct  = Math.round((1 - discFactor) * 100);
 
-  // Ideal multipliers: no discount — start at inv, reach peak
-  const idealM1 = 1.0;
-  const idealPeakMul = peak / inv;                  // e.g. 6000/3000 = 2.0×
+  // Slab breakpoints as actual room counts
+  const r1  = 1;                                           // slab 1: rooms 0–1
+  const r60 = Math.max(2, Math.round(rooms * 0.60));       // slab 2 kicks in
+  const r80 = Math.max(r60 + 1, Math.round(rooms * 0.80));// slab 3 kicks in
 
-  // With discount: effective base is lower, so to reach same peak
-  // discPeakMul = peak / effectiveBase
-  const discPeakMul = peak / effectiveBase;
-
-  // Suggested slab multipliers (4-point J-curve) for both scenarios
-  // Ideal: 1.0 → 1.3 → 1.7 → idealPeakMul (capped shape)
-  // With discount: adjusted to still hit peak
-  const slabShape = [1.0, 1.3/2.2, 1.7/2.2, 1.0]; // normalised shape [0..1]
-  function slabMuls(peakMul) {
-    const m1 = idealM1;
-    const m4 = peakMul;
-    // Keep proportional shape: m2 at 45% of gap, m3 at 75%
-    const gap = m4 - m1;
+  // Derive multipliers from peak — proportional J-shape
+  function slabMuls(base, targetPeak) {
+    const peakMul = targetPeak / base;
+    const gap = peakMul - 1.0;
     return {
-      m1, m2: +(m1 + gap * 0.40).toFixed(2),
-      m3: +(m1 + gap * 0.70).toFixed(2), m4: +m4.toFixed(2)
+      m1: 1.0,
+      m2: +(1.0 + gap * 0.38).toFixed(2),
+      m3: +(1.0 + gap * 0.68).toFixed(2),
+      m4: +peakMul.toFixed(2),
     };
   }
 
-  const ideal = slabMuls(idealPeakMul);
-  const disc  = slabMuls(discPeakMul);
+  const ideal = slabMuls(inv, peak);
+  const disc  = slabMuls(effectiveBase, peak);
 
-  // Danger checks
+  // Per-room increment within each slab band
+  const inc1 = r60 > 1         ? (ideal.m2 - ideal.m1) * inv / r60           : 0;
+  const inc2 = (r80-r60) > 0   ? (ideal.m3 - ideal.m2) * inv / (r80 - r60)  : 0;
+  const inc3 = (rooms-r80) > 0 ? (ideal.m4 - ideal.m3) * inv / (rooms - r80): 0;
+
+  // Build 4 slabs with real room ranges
+  const SLAB_DEFS = [
+    {
+      label: 'Slab 1', color: 'var(--grn)',
+      range: `Rooms 0 – ${r1}`,
+      occ: '0 – ' + Math.round(r1/rooms*100) + '%',
+      mul: ideal.m1,
+      discMul: disc.m1,
+      inc: inc1, incRooms: r60,
+      desc: 'Hotel is empty or just got its first booking. Fill the room — no reason to hold a premium yet.',
+    },
+    {
+      label: 'Slab 2', color: 'var(--gold)',
+      range: `Rooms ${r1+1} – ${r60}`,
+      occ: Math.round((r1+1)/rooms*100) + ' – 60%',
+      mul: ideal.m2,
+      discMul: disc.m2,
+      inc: inc2, incRooms: r80 - r60,
+      desc: 'Hotel is filling up. Demand is confirmed. Rate begins its climb — guests are competing for fewer rooms.',
+    },
+    {
+      label: 'Slab 3', color: '#F5A623',
+      range: `Rooms ${r60+1} – ${r80}`,
+      occ: '60 – 80%',
+      mul: ideal.m3,
+      discMul: disc.m3,
+      inc: inc3, incRooms: rooms - r80,
+      desc: 'Nearly full. Scarcity is visible. Remaining rooms command a meaningful premium.',
+    },
+    {
+      label: 'Slab 4', color: 'var(--red)',
+      range: `Rooms ${r80+1} – ${rooms}`,
+      occ: '80 – 100%',
+      mul: ideal.m4,
+      discMul: disc.m4,
+      inc: null, incRooms: 0,
+      desc: 'Sold out zone. Maximum rate. Last rooms should be priced to capture the highest the market will pay.',
+    },
+  ];
+
+  // Render slab table
+  const slabOut = document.getElementById('slabOutput');
+  if(slabOut) {
+    slabOut.innerHTML = SLAB_DEFS.map(s => {
+      const discDiff = totalDiscPct > 0 && s.discMul.toFixed(2) !== s.mul.toFixed(2);
+      return `<div style="background:var(--s2);border:1px solid var(--bd);border-left:3px solid ${s.color};border-radius:0 7px 7px 0;padding:9px 12px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap">
+          <div style="font-family:'DM Mono',monospace;font-size:.62rem;font-weight:500;color:${s.color};flex-shrink:0">${s.label}</div>
+          <div style="font-size:.72rem;font-weight:600;color:var(--w);flex:1">${s.range}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:.5rem;color:var(--dim);background:var(--s3);padding:1px 6px;border-radius:3px;flex-shrink:0">${s.occ}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
+          <div style="font-family:'DM Mono',monospace;font-size:.82rem;font-weight:700;color:${s.color}">${fmt(inv * s.mul)}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:.52rem;color:var(--grn);background:var(--gnd);border:1px solid rgba(50,200,138,.2);padding:1px 6px;border-radius:3px">+${Math.round((s.mul-1)*100)}%</div>
+          ${discDiff ? `<div style="font-size:.56rem;color:var(--dim)">→ with discount: <span style="color:var(--red);font-family:'DM Mono',monospace">${fmt(effectiveBase * s.discMul)}</span> <span style="color:var(--red)">(${s.discMul.toFixed(2)}×)</span></div>` : ''}
+        </div>
+        <div style="font-size:.63rem;color:var(--dim);line-height:1.4;margin-bottom:${s.inc!==null?'5px':'0'}">${s.desc}</div>
+        ${s.inc !== null ? `<div style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.04);border:1px solid var(--bd2);border-radius:4px;padding:2px 8px">
+          <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:${s.color}">+${fmt(s.inc)}</span>
+          <span style="font-size:.55rem;color:var(--dim)">per room · next ${s.incRooms} room${s.incRooms!==1?'s':''}</span>
+        </div>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  // Danger / warning alerts
   const issues = [];
-  if(peak < inv) {
-    issues.push({ level:'danger', msg:`🚨 Your desired peak rate (${fmt(peak)}) is <strong>lower than your inventory rate</strong> (${fmt(inv)}). The J-curve cannot go up — it's inverted. Raise your peak target.` });
-  }
-  if(peak < effectiveBase * 1.1) {
-    issues.push({ level:'danger', msg:`🚨 After discounts your effective base is ${fmt(effectiveBase)}. Your peak target (${fmt(peak)}) only gives a ${Math.round((peak/effectiveBase-1)*100)}% uplift — not enough spread to form a meaningful J-curve. Either raise the peak or reduce discounts.` });
-  }
-  if(discPeakMul > 3.5) {
-    issues.push({ level:'danger', msg:`🚨 To compensate for the ${totalDiscPct}% discount and still hit ${fmt(peak)}, the peak multiplier needs to be <strong>${discPeakMul.toFixed(2)}×</strong>. This is extreme — OTAs may suppress your listing or guests will not convert. <strong>Recommendation: reduce discounts or lower the peak target.</strong>` });
-  } else if(discPeakMul > 2.5) {
-    issues.push({ level:'warn', msg:`⚠️ Compensating for a ${totalDiscPct}% discount pushes your peak multiplier to <strong>${discPeakMul.toFixed(2)}×</strong>. This is aggressive. Monitor conversion rates carefully.` });
-  }
-  if(totalDiscPct > 25) {
-    issues.push({ level:'warn', msg:`⚠️ Total stacked discount is <strong>${totalDiscPct}%</strong>. Heavy discounting flattens the J-curve's starting point significantly — you need a much steeper climb to recover, which can look unnatural and hurt conversions.` });
-  }
-  if(effectiveBase < inv * 0.75) {
-    issues.push({ level:'warn', msg:`⚠️ Your effective base rate after discounts (${fmt(effectiveBase)}) is more than 25% below your inventory rate. The J-curve is starting from a significantly weakened position.` });
-  }
+  if(peakPct < 10)
+    issues.push({ level:'danger', msg:`🚨 Peak target is only +${peakPct}% above inventory (${fmt(peak)}). Not enough spread to form a J-curve — increase the peak target.` });
+  if(disc.m4 > 3.5)
+    issues.push({ level:'danger', msg:`🚨 Discount forces peak multiplier to <strong>${disc.m4.toFixed(2)}×</strong> to still hit ${fmt(peak)}. This is extreme — OTAs may suppress your listing. Reduce discounts or lower the peak target.` });
+  else if(disc.m4 > 2.5 && totalDiscPct > 0)
+    issues.push({ level:'warn', msg:`⚠️ Compensating for ${totalDiscPct}% discount pushes peak multiplier to <strong>${disc.m4.toFixed(2)}×</strong>. Monitor conversion rates carefully.` });
+  if(totalDiscPct > 25)
+    issues.push({ level:'warn', msg:`⚠️ Stacked discounts total <strong>${totalDiscPct}%</strong>. The J-curve starts from a significantly weakened base (${fmt(effectiveBase)}) and needs a steeper climb to recover — which can look unnatural to guests.` });
 
-  // Render output panel
   const out = document.getElementById('jc_output');
-  if(!out) return;
-
-  const rateBadge = (label, val, color) =>
-    `<div style="background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:9px 12px;flex:1;min-width:0">
-      <div style="font-family:'DM Mono',monospace;font-size:.48rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:3px">${label}</div>
-      <div style="font-family:'DM Mono',monospace;font-size:.85rem;font-weight:600;color:${color}">${val}</div>
-    </div>`;
-
-  const slabRow = (label, ideal, disc, color) => {
-    const diff = disc.toFixed(2) !== ideal.toFixed(2);
-    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--s2);border-radius:6px;border:1px solid var(--bd)">
-      <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:${color};width:52px;flex-shrink:0">${label}</div>
-      <div style="font-size:.62rem;color:var(--dim);width:48px;flex-shrink:0">Ideal: <span style="color:var(--grn)">${ideal.toFixed(2)}×</span></div>
-      <div style="font-size:.62rem;color:var(--dim);flex:1">With discount: <span style="color:${diff?'var(--red)':'var(--grn)'}">${disc.toFixed(2)}×</span></div>
-      ${diff ? `<div style="font-size:.56rem;color:var(--red);padding:1px 6px;background:rgba(239,80,80,.1);border:1px solid rgba(239,80,80,.2);border-radius:3px">+${((disc/ideal-1)*100).toFixed(0)}% steeper</div>` : ''}
-    </div>`;
-  };
-
-  out.innerHTML = `
-    ${issues.map(w=>`<div style="padding:9px 12px;border-radius:7px;margin-bottom:2px;background:${w.level==='danger'?'rgba(239,80,80,.09)':'rgba(200,164,74,.09)'};border:1px solid ${w.level==='danger'?'rgba(239,80,80,.3)':'rgba(200,164,74,.3)'}">
-      <div style="font-size:.67rem;color:${w.level==='danger'?'var(--red)':'var(--gold)'};line-height:1.6">${w.msg}</div>
-    </div>`).join('')}
-
-    <div style="display:flex;gap:6px;flex-wrap:wrap">
-      ${rateBadge('Inventory Rate', fmt(inv), 'var(--w)')}
-      ${rateBadge('Discount', totalDiscPct > 0 ? '-'+totalDiscPct+'%' : 'None', totalDiscPct > 0 ? 'var(--red)' : 'var(--grn)')}
-      ${rateBadge('Effective Base', fmt(effectiveBase), totalDiscPct > 15 ? 'var(--red)' : totalDiscPct > 0 ? 'var(--gold)' : 'var(--grn)')}
-      ${rateBadge('Peak Target', fmt(peak), 'var(--grn)')}
-    </div>
-
-    <div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:10px 12px">
-      <div style="font-family:'DM Mono',monospace;font-size:.48rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:8px">Recommended Multipliers</div>
-      <div style="display:flex;flex-direction:column;gap:4px">
-        ${slabRow('Slab 1', ideal.m1, disc.m1, 'var(--grn)')}
-        ${slabRow('Slab 2', ideal.m2, disc.m2, 'var(--gold)')}
-        ${slabRow('Slab 3', ideal.m3, disc.m3, '#F5A623')}
-        ${slabRow('Slab 4', ideal.m4, disc.m4, 'var(--red)')}
+  if(out) {
+    out.innerHTML = `
+      <div style="display:flex;gap:5px;flex-wrap:wrap">
+        ${[
+          ['Inventory', fmt(inv), 'var(--w)'],
+          ['Discount', totalDiscPct > 0 ? '-'+totalDiscPct+'%' : 'None', totalDiscPct > 0 ? 'var(--red)' : 'var(--dim)'],
+          ['Eff. Base', fmt(effectiveBase), totalDiscPct > 15 ? 'var(--red)' : totalDiscPct > 0 ? 'var(--gold)' : 'var(--dim)'],
+          ['Peak', fmt(peak), 'var(--grn)'],
+        ].map(([l,v,c]) => `<div style="background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:7px 10px;flex:1;min-width:0">
+          <div style="font-family:'DM Mono',monospace;font-size:.44rem;letter-spacing:1px;text-transform:uppercase;color:var(--dim);margin-bottom:2px">${l}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:.78rem;font-weight:600;color:${c}">${v}</div>
+        </div>`).join('')}
       </div>
-      ${totalDiscPct > 0 ? `<div style="margin-top:9px;font-size:.63rem;color:var(--dim);line-height:1.6;padding:8px 10px;background:var(--s3);border-radius:5px;border-left:2px solid var(--gold)">
-        💡 The <strong style="color:var(--w)">"With Discount"</strong> column shows the steeper multipliers needed to compensate for the ${totalDiscPct}% discount and still reach ${fmt(peak)} at full occupancy. The gap between the two columns is the J-curve distortion caused by the discount.
-      </div>` : ''}
-    </div>`;
+      ${issues.map(w=>`<div style="padding:8px 11px;border-radius:6px;background:${w.level==='danger'?'rgba(239,80,80,.09)':'rgba(200,164,74,.09)'};border:1px solid ${w.level==='danger'?'rgba(239,80,80,.3)':'rgba(200,164,74,.3)'}">
+        <div style="font-size:.66rem;color:${w.level==='danger'?'var(--red)':'var(--gold)'};line-height:1.6">${w.msg}</div>
+      </div>`).join('')}
+      ${totalDiscPct > 0 ? `<div style="font-size:.62rem;color:var(--dim);line-height:1.6;padding:7px 10px;background:var(--s3);border-radius:5px;border-left:2px solid var(--gold)">
+        💡 Discount-adjusted rates shown in each slab. The curve must climb steeper to reach the same peak — that's the J-curve distortion your discount causes.
+      </div>` : ''}`;
+  }
 
-  // Draw comparison chart
   drawJCurveComparison(rooms, inv, effectiveBase, peak, ideal, disc);
 }
 
@@ -2601,104 +2582,74 @@ function buildRMSTabHTML() {
 → Slab pricing: first room at base → 60% full → rate nudges up → 80% → scarcity → 100% → peak price
 → Typical result: 15–25% RevPAR in 60 days</div>
     </div>
-    <!-- J-Curve Setup Advisor -->
+    <!-- Occupancy Pricing — Unified -->
     <div class="blk au">
-      <div class="bh red">📐 Occupancy-Based Pricing — J-Curve Advisor</div>
+      <div class="bh red">📐 Occupancy-Based Pricing</div>
       <div style="font-size:.7rem;color:var(--dim);line-height:1.55;margin-bottom:14px">
-        Enter your inventory rate and any discount applied. The advisor shows how the discount <strong style="color:var(--w)">flattens your J-curve</strong> and recommends the multipliers needed to still hit your desired peak — without damaging the model.
+        Set your inventory rate, discounts, and how high you want to go at full occupancy. The slab ranges are shown as actual room counts — and the chart shows how discounts flatten your J-curve.
       </div>
 
+      <!-- TOP INPUTS: 4 across -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+        <div class="calc-field">
+          <div class="calc-lbl">Inventory Rate (₹)</div>
+          <div class="calc-row"><div class="calc-pre">₹</div><input class="calc-inp" id="jc_inv" type="number" value="3000" min="1" oninput="buildJAdvisor()"></div>
+        </div>
+        <div class="calc-field">
+          <div class="calc-lbl">Total Rooms</div>
+          <div class="calc-row"><input class="calc-inp" id="jc_rooms" type="number" value="20" min="1" oninput="buildJAdvisor()"></div>
+        </div>
+        <div class="calc-field">
+          <div class="calc-lbl">Peak Target % above inventory</div>
+          <div class="calc-row"><input class="calc-inp" id="jc_peakpct" type="number" value="100" min="10" max="500" step="5" oninput="buildJAdvisor()"><div class="calc-pre" style="border-left:1px solid var(--bd2);border-right:none">%</div></div>
+        </div>
+        <div class="calc-field">
+          <div class="calc-lbl">Peak Rate (auto)</div>
+          <div class="calc-row" style="background:var(--s3)"><div class="calc-pre">₹</div><div class="calc-inp" id="jc_peak_display" style="display:flex;align-items:center;padding:0 10px;font-family:'DM Mono',monospace;font-size:.9rem;font-weight:500;color:var(--grn)">—</div></div>
+        </div>
+      </div>
+
+      <!-- DISCOUNTS -->
+      <div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--red)">Discounts Applied</div>
+          <button onclick="addDiscount()" style="background:none;border:1px dashed var(--bd2);border-radius:4px;color:var(--dim);font-family:'DM Mono',monospace;font-size:.5rem;padding:3px 10px;cursor:pointer;letter-spacing:1px">+ Add</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px" id="jc_discounts">
+          <div style="display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center">
+            <input type="text" value="Genius / Platform Discount" placeholder="Discount name"
+              style="background:var(--s1);border:1.5px solid var(--bd2);border-radius:5px;color:var(--w);font-size:.68rem;padding:5px 9px;outline:none;width:100%">
+            <div class="calc-row" style="width:76px;flex-shrink:0;height:34px">
+              <input class="calc-inp" type="number" value="10" min="0" max="60" step="1" oninput="buildJAdvisor()" style="text-align:center">
+              <div class="calc-pre" style="border-left:1px solid var(--bd2);border-right:none">%</div>
+            </div>
+            <button onclick="removeDiscount(this)" style="background:none;border:1px solid var(--bd2);border-radius:4px;color:var(--dim);font-size:.7rem;padding:3px 8px;cursor:pointer">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN BODY: slabs left, chart right -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start">
 
-        <!-- LEFT: Inputs -->
-        <div style="display:flex;flex-direction:column;gap:10px">
-
-          <!-- Inventory Rate -->
-          <div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:12px">
-            <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:10px">Inventory / Rack Rate</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-              <div class="calc-field"><div class="calc-lbl">Inventory Rate (₹)</div>
-                <div class="calc-row"><div class="calc-pre">₹</div><input class="calc-inp" id="jc_inv" type="number" value="3000" min="1" oninput="buildJAdvisor()"></div>
-              </div>
-              <div class="calc-field"><div class="calc-lbl">Total Rooms</div>
-                <div class="calc-row"><input class="calc-inp" id="jc_rooms" type="number" value="20" min="1" oninput="buildJAdvisor()"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Discounts -->
-          <div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:12px">
-            <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:10px">Discounts Applied</div>
-            <div style="display:flex;flex-direction:column;gap:7px" id="jc_discounts">
-              <div style="display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center">
-                <input type="text" value="Genius / Platform Discount" placeholder="Discount name"
-                  style="background:var(--s1);border:1.5px solid var(--bd2);border-radius:5px;color:var(--w);font-size:.68rem;padding:6px 9px;outline:none;width:100%">
-                <div class="calc-row" style="width:72px;flex-shrink:0">
-                  <input class="calc-inp" type="number" value="10" min="0" max="60" step="1" oninput="buildJAdvisor()" style="text-align:center">
-                  <div class="calc-pre" style="border-left:1px solid var(--bd2);border-right:none">%</div>
-                </div>
-                <button onclick="removeDiscount(this)" style="background:none;border:1px solid var(--bd2);border-radius:4px;color:var(--dim);font-size:.7rem;padding:4px 8px;cursor:pointer;flex-shrink:0">✕</button>
-              </div>
-            </div>
-            <button onclick="addDiscount()" style="margin-top:8px;background:none;border:1px dashed var(--bd2);border-radius:5px;color:var(--dim);font-family:'DM Mono',monospace;font-size:.52rem;padding:5px 12px;cursor:pointer;width:100%;letter-spacing:1px">+ Add Discount</button>
-          </div>
-
-          <!-- Desired Peak -->
-          <div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:12px">
-            <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--grn);margin-bottom:10px">Target</div>
-            <div class="calc-field"><div class="calc-lbl">Desired peak rate when 100% full (₹)</div>
-              <div class="calc-row"><div class="calc-pre">₹</div><input class="calc-inp" id="jc_peak" type="number" value="6000" min="1" oninput="buildJAdvisor()"></div>
-            </div>
-          </div>
+        <!-- LEFT: slab table -->
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:8px">Slab Breakdown</div>
+          <div id="slabOutput" style="display:flex;flex-direction:column;gap:5px"></div>
+          <div id="jc_output" style="display:flex;flex-direction:column;gap:6px;margin-top:10px"></div>
         </div>
 
-        <!-- RIGHT: Chart + Summary -->
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:12px">
-            <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:6px">J-Curve Comparison</div>
-            <canvas id="jc_canvas" height="180" style="width:100%;display:block"></canvas>
-            <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap">
-              <div style="display:flex;align-items:center;gap:5px"><div style="width:18px;height:2px;background:#32C88A"></div><div style="font-size:.58rem;color:var(--dim)">Ideal (no discount)</div></div>
-              <div style="display:flex;align-items:center;gap:5px"><div style="width:18px;height:2px;background:#EF5050;border-top:2px dashed #EF5050"></div><div style="font-size:.58rem;color:var(--dim)">With discount</div></div>
-            </div>
+        <!-- RIGHT: chart -->
+        <div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:12px;position:sticky;top:10px">
+          <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:6px">J-Curve — Rate vs Occupancy</div>
+          <canvas id="jc_canvas" height="190" style="width:100%;display:block"></canvas>
+          <div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:5px"><div style="width:16px;height:2px;background:#32C88A"></div><div style="font-size:.56rem;color:var(--dim)">Ideal (no discount)</div></div>
+            <div style="display:flex;align-items:center;gap:5px"><div style="width:16px;height:2px;background:#EF5050;border-top:2px dashed #EF5050"></div><div style="font-size:.56rem;color:var(--dim)">With discount</div></div>
           </div>
-          <div id="jc_output" style="display:flex;flex-direction:column;gap:6px"></div>
         </div>
       </div>
-    </div>
-
-    <!-- Slab Calculator -->
-    <div class="blk au">
-      <div class="bh gold">⚡ Occupancy Slab Calculator</div>
-      <div style="font-size:.7rem;color:var(--dim);line-height:1.55;margin-bottom:12px">
-        Enter room count and base rate. Set 4 slab multipliers. Slab 1 is always <strong style="color:var(--w)">0–1 room sold</strong> — the first booking. Rate then climbs on a J-curve through 60%, 80%, and 100% occupancy.
-      </div>
-      <!-- INPUTS ROW -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-        <div class="calc-field"><div class="calc-lbl">Total Rooms</div>
-          <div class="calc-row"><input class="calc-inp" id="s_rooms" type="number" placeholder="e.g. 12" min="1" value="12" oninput="buildSlabs()"></div></div>
-        <div class="calc-field"><div class="calc-lbl">Base Rate (₹)</div>
-          <div class="calc-row"><div class="calc-pre">₹</div><input class="calc-inp" id="s_base" type="number" placeholder="e.g. 2000" min="1" value="2000" oninput="buildSlabs()"></div></div>
-      </div>
-      <div style="font-family:'DM Mono',monospace;font-size:.52rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:8px">Slab Rate Multipliers</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:14px">
-        <div class="calc-field"><div class="calc-lbl">Slab 1 (0–1 room)</div>
-          <div class="calc-row"><input class="calc-inp" id="s_m1" type="number" value="1.0" step="0.05" min="0.5" max="3" oninput="buildSlabs()"><div class="calc-pre" style="border-left:1px solid var(--bd2);border-right:none">×</div></div></div>
-        <div class="calc-field"><div class="calc-lbl">Slab 2 (60%)</div>
-          <div class="calc-row"><input class="calc-inp" id="s_m2" type="number" value="1.3" step="0.05" min="0.5" max="3" oninput="buildSlabs()"><div class="calc-pre" style="border-left:1px solid var(--bd2);border-right:none">×</div></div></div>
-        <div class="calc-field"><div class="calc-lbl">Slab 3 (80%)</div>
-          <div class="calc-row"><input class="calc-inp" id="s_m3" type="number" value="1.7" step="0.05" min="0.5" max="3" oninput="buildSlabs()"><div class="calc-pre" style="border-left:1px solid var(--bd2);border-right:none">×</div></div></div>
-        <div class="calc-field"><div class="calc-lbl">Slab 4 (100%)</div>
-          <div class="calc-row"><input class="calc-inp" id="s_m4" type="number" value="2.2" step="0.05" min="0.5" max="3" oninput="buildSlabs()"><div class="calc-pre" style="border-left:1px solid var(--bd2);border-right:none">×</div></div></div>
-      </div>
-      <!-- SLAB + CHART SIDE BY SIDE -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start">
-        <div id="slabOutput"></div>
-        <div style="background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:12px;position:sticky;top:10px">
-          <div style="font-family:'DM Mono',monospace;font-size:.52rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:10px">J-Curve — Rate vs Occupancy</div>
-          <canvas id="jcurve" height="200" style="width:100%;display:block"></canvas>
-        </div>
-      </div>
+      <!-- hidden canvas kept for buildSlabs() compat -->
+      <canvas id="jcurve" style="display:none"></canvas>
     </div>
 
     <!-- Demand Calendar -->
