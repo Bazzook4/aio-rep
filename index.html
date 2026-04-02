@@ -2181,9 +2181,10 @@ function addDiscount() {
   row.innerHTML = `
     <input type="text" value="" placeholder="Discount name"
       style="background:var(--s1);border:1.5px solid var(--bd2);border-radius:5px;color:var(--w);font-size:.68rem;padding:6px 9px;outline:none;width:100%">
-    <div class="calc-row" style="width:72px;flex-shrink:0">
-      <input class="calc-inp" type="number" value="0" min="0" max="60" step="1" oninput="buildJAdvisor()" style="text-align:center">
-      <div class="calc-pre" style="border-left:1px solid var(--bd2);border-right:none">%</div>
+    <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+      <input type="number" value="0" min="0" max="60" step="1" oninput="buildJAdvisor()"
+        style="width:64px;background:var(--s1);border:1.5px solid var(--bd2);border-radius:5px;color:var(--w);font-family:'DM Mono',monospace;font-size:.82rem;font-weight:500;padding:6px 8px;outline:none;text-align:center">
+      <span style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--dim)">%</span>
     </div>
     <button onclick="removeDiscount(this)" style="background:none;border:1px solid var(--bd2);border-radius:4px;color:var(--dim);font-size:.7rem;padding:4px 8px;cursor:pointer;flex-shrink:0">✕</button>`;
   container.appendChild(row);
@@ -2301,13 +2302,10 @@ function buildJAdvisor() {
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
           <div style="font-family:'DM Mono',monospace;font-size:.82rem;font-weight:700;color:${s.color}">${fmt(inv * s.mul)}</div>
           <div style="font-family:'DM Mono',monospace;font-size:.52rem;color:var(--grn);background:var(--gnd);border:1px solid rgba(50,200,138,.2);padding:1px 6px;border-radius:3px">+${Math.round((s.mul-1)*100)}%</div>
-          ${discDiff ? `<div style="font-size:.56rem;color:var(--dim)">→ with discount: <span style="color:var(--red);font-family:'DM Mono',monospace">${fmt(effectiveBase * s.discMul)}</span> <span style="color:var(--red)">(${s.discMul.toFixed(2)}×)</span></div>` : ''}
+          ${s.inc !== null ? `<div style="font-family:'DM Mono',monospace;font-size:.52rem;color:${s.color};background:rgba(255,255,255,.05);border:1px solid var(--bd2);padding:1px 7px;border-radius:3px">+${fmt(s.inc)}<span style="color:var(--dim);font-size:.46rem"> /room</span></div>` : ''}
+          ${discDiff ? `<div style="font-size:.56rem;color:var(--dim)">→ discount: <span style="color:var(--red);font-family:'DM Mono',monospace">${fmt(effectiveBase * s.discMul)}</span></div>` : ''}
         </div>
-        <div style="font-size:.63rem;color:var(--dim);line-height:1.4;margin-bottom:${s.inc!==null?'5px':'0'}">${s.desc}</div>
-        ${s.inc !== null ? `<div style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.04);border:1px solid var(--bd2);border-radius:4px;padding:2px 8px">
-          <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:${s.color}">+${fmt(s.inc)}</span>
-          <span style="font-size:.55rem;color:var(--dim)">per room · next ${s.incRooms} room${s.incRooms!==1?'s':''}</span>
-        </div>` : ''}
+        <div style="font-size:.63rem;color:var(--dim);line-height:1.4">${s.desc}</div>
       </div>`;
     }).join('');
   }
@@ -2619,9 +2617,10 @@ function buildRMSTabHTML() {
           <div style="display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center">
             <input type="text" value="Genius / Platform Discount" placeholder="Discount name"
               style="background:var(--s1);border:1.5px solid var(--bd2);border-radius:5px;color:var(--w);font-size:.68rem;padding:5px 9px;outline:none;width:100%">
-            <div class="calc-row" style="width:76px;flex-shrink:0;height:34px">
-              <input class="calc-inp" type="number" value="10" min="0" max="60" step="1" oninput="buildJAdvisor()" style="text-align:center">
-              <div class="calc-pre" style="border-left:1px solid var(--bd2);border-right:none">%</div>
+            <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+              <input type="number" value="10" min="0" max="60" step="1" oninput="buildJAdvisor()"
+                style="width:64px;background:var(--s1);border:1.5px solid var(--bd2);border-radius:5px;color:var(--w);font-family:'DM Mono',monospace;font-size:.82rem;font-weight:500;padding:6px 8px;outline:none;text-align:center">
+              <span style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--dim)">%</span>
             </div>
             <button onclick="removeDiscount(this)" style="background:none;border:1px solid var(--bd2);border-radius:4px;color:var(--dim);font-size:.7rem;padding:3px 8px;cursor:pointer">✕</button>
           </div>
