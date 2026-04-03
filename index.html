@@ -2302,9 +2302,10 @@ function buildJAdvisor() {
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
           <div style="font-family:'DM Mono',monospace;font-size:.82rem;font-weight:700;color:${s.color}">${fmt(inv * s.mul)}</div>
           <div style="font-family:'DM Mono',monospace;font-size:.52rem;color:var(--grn);background:var(--gnd);border:1px solid rgba(50,200,138,.2);padding:1px 6px;border-radius:3px">+${Math.round((s.mul-1)*100)}%</div>
-          ${s.inc !== null ? `<div style="font-family:'DM Mono',monospace;font-size:.52rem;color:${s.color};background:rgba(255,255,255,.05);border:1px solid var(--bd2);padding:1px 7px;border-radius:3px">+${fmt(s.inc)}<span style="color:var(--dim);font-size:.46rem"> /room</span></div>` : ''}
-          ${s.inc !== null ? `<div style="font-family:'DM Mono',monospace;font-size:.52rem;color:var(--dim);background:var(--s3);border:1px solid var(--bd);padding:1px 7px;border-radius:3px">${fmt(inv * s.mul)} → ${fmt(inv * s.mul + s.inc * s.incRooms)}<span style="font-size:.44rem"> total range</span></div>` : ''}
           ${discDiff ? `<div style="font-size:.56rem;color:var(--dim)">→ discount: <span style="color:var(--red);font-family:'DM Mono',monospace">${fmt(effectiveBase * s.discMul)}</span></div>` : ''}
+        </div>
+        <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--dim);margin-bottom:4px">
+          ${s.range.replace('–','–')} &nbsp;—&nbsp; Total Increment <span style="color:var(--w)">${s.inc !== null ? fmt(s.inc * s.incRooms) : '₹0'}</span>${s.inc !== null && s.incRooms > 0 ? ` &nbsp;—&nbsp; per room <span style="color:var(--w)">${fmt(s.inc)}</span>` : ''}
         </div>
         <div style="font-size:.63rem;color:var(--dim);line-height:1.4">${s.desc}</div>
       </div>`;
