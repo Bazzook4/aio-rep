@@ -2280,48 +2280,65 @@ function buildJAdvisor() {
     var r90 = r80; // unused in 4-slab mode
   }
 
-  // ── INCREMENT DISTRIBUTION ───────────────────────────────────────────────────
-  // Total gap = peak - inv split using a geometric progression across slabs.
-  // Each slab's increment = previous × ratio, so the climb is visible throughout
-  // but still accelerates toward the final slab — no cliff, no flat early zone.
-  //
-  // Aggressive ratio 2.2 (steeper escalation):
-  //   4-slab shares: 1 / 2.2 / 4.84 / 10.65  → 5.4% / 11.8% / 26% / 57%
-  //   5-slab shares: 1 / 2.2 / 4.84 / 10.65 / 23.4 → 2.4% / 5.2% / 11.5% / 25.3% / 55.6%
-  // Mild ratio 1.7 (gentler escalation):
-  //   4-slab shares: 1 / 1.7 / 2.89 / 4.91  → 9.7% / 16.5% / 28% / 47.6%
-  //   5-slab shares: 1 / 1.7 / 2.89 / 4.91 / 8.35 → 5.5% / 9.4% / 16% / 27.2% / 46.2%
+  // ── PER-SLAB WEIGHT INPUTS ───────────────────────────────────────────────────
+  // Default weights reflect a geometric progression (last slabs get more of the gap).
+  // User can override via the weight inputs rendered below the curve mode buttons.
+  const slabCount = use5Slabs ? 5 : 4;
+  const defaultWeights = use5Slabs ? [0,1,2,4,8] : [0,1,2,6]; // index = slab number
+
+  // Render weight inputs if not already present for this slab count
+  const weightRows = document.getElementById('jc_weight_rows');
+  if(weightRows) {
+    const existing = weightRows.querySelectorAll('.jc-w-inp');
+    if(existing.length !== slabCount - 1) {
+      // Re-render weight inputs
+      weightRows.innerHTML = defaultWeights.slice(1).map((dw, i) => {
+        const sn = i + 2; // slab number 2..5
+        return `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;min-width:52px">
+          <div style="font-family:'DM Mono',monospace;font-size:.48rem;color:var(--dim)">Slab ${sn}</div>
+          <input class="jc-w-inp calc-inp" id="jc_w${sn}" type="number" value="${dw}" min="1" max="20" step="1" oninput="buildJAdvisor()"
+            style="text-align:center;width:100%;font-family:'DM Mono',monospace;font-size:.75rem;font-weight:600;padding:5px 2px">
+          <div style="font-family:'DM Mono',monospace;font-size:.44rem;color:var(--dim)" id="jc_wp${sn}">—</div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // Read user weights (slabs 2..5)
+  const userW = Array.from({length: slabCount - 1}, (_,i) => {
+    const v = parseFloat(document.getElementById(`jc_w${i+2}`)?.value);
+    return (isNaN(v) || v < 1) ? defaultWeights[i+1] : v;
+  });
+  const wSum = userW.reduce((a,b) => a+b, 0);
+  // Cumulative fractions of the gap (c[i] = cumulative weight up to slab i+2)
+  const cumW = userW.map((_, i) => userW.slice(0, i+1).reduce((a,b)=>a+b,0) / wSum);
+
+  // Update the % share display under each weight input
+  userW.forEach((w, i) => {
+    const pct = Math.round(w / wSum * 100);
+    const el = document.getElementById(`jc_wp${i+2}`);
+    if(el) el.textContent = pct + '%';
+  });
+
+  // ── MULTIPLIER COMPUTATION ───────────────────────────────────────────────────
   function slabMuls(base, targetPeak) {
     const peakMul = targetPeak / base;
     const gap = peakMul - 1.0;
-    const ratio = jCurveMode === 'mild' ? 1.7 : 2.2;
-
     if(use5Slabs) {
-      // 5 increments (slabs 2–5), geometric: w2, w2*r, w2*r², w2*r³
-      const r = ratio;
-      const w = [1, r, r*r, r*r*r, r*r*r*r]; // slab2..slab5 relative weights (skip slab1 =0)
-      // slab1 has 0 increment; distribute gap across w[1..4]
-      const wSum = w[1]+w[2]+w[3]+w[4];
-      const c2 = w[1]/wSum, c3 = (w[1]+w[2])/wSum, c4 = (w[1]+w[2]+w[3])/wSum;
       return {
         m1: 1.0,
-        m2: +(1.0 + gap * c2).toFixed(3),
-        m3: +(1.0 + gap * c3).toFixed(3),
-        m4: +(1.0 + gap * c4).toFixed(3),
+        m2: +(1.0 + gap * cumW[0]).toFixed(3),
+        m3: +(1.0 + gap * cumW[1]).toFixed(3),
+        m4: +(1.0 + gap * cumW[2]).toFixed(3),
         m5: +peakMul.toFixed(3),
       };
     } else {
-      // 4 slabs: 3 increments (slabs 2–4), geometric
-      const r = ratio;
-      const w = [1, r, r*r, r*r*r];
-      const wSum = w[1]+w[2]+w[3];
-      const c2 = w[1]/wSum, c3 = (w[1]+w[2])/wSum;
       return {
         m1: 1.0,
-        m2: +(1.0 + gap * c2).toFixed(3),
-        m3: +(1.0 + gap * c3).toFixed(3),
+        m2: +(1.0 + gap * cumW[0]).toFixed(3),
+        m3: +(1.0 + gap * cumW[1]).toFixed(3),
         m4: +peakMul.toFixed(3),
-        m5: +peakMul.toFixed(3), // chart compat
+        m5: +peakMul.toFixed(3),
       };
     }
   }
@@ -2763,18 +2780,30 @@ function buildRMSTabHTML() {
         </div>
       </div>
 
-      <!-- CURVE MODE + INCREMENT SCALE -->
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--dim)">Curve</div>
-          <button id="jc_mode_aggressive" class="cs-tab on" onclick="setCurveMode('aggressive')" style="font-size:.58rem;padding:4px 12px">Aggressive J</button>
-          <button id="jc_mode_mild"       class="cs-tab"    onclick="setCurveMode('mild')"       style="font-size:.58rem;padding:4px 12px">Mild J</button>
+      <!-- CURVE MODE + SCALE + PER-SLAB WEIGHTS -->
+      <div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;margin-bottom:10px">
+
+        <!-- Row 1: Curve mode + global scale -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:7px">
+            <div style="font-family:'DM Mono',monospace;font-size:.48rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim)">Curve</div>
+            <button id="jc_mode_aggressive" class="cs-tab on" onclick="setCurveMode('aggressive')" style="font-size:.56rem;padding:3px 10px">Aggressive J</button>
+            <button id="jc_mode_mild"       class="cs-tab"    onclick="setCurveMode('mild')"       style="font-size:.56rem;padding:3px 10px">Mild J</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:160px">
+            <div style="font-family:'DM Mono',monospace;font-size:.48rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);white-space:nowrap">Gap Scale</div>
+            <input type="range" id="jc_scale" min="10" max="100" value="100" step="5" oninput="buildJAdvisor()" style="flex:1;accent-color:var(--gold);cursor:pointer">
+            <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--gold);min-width:30px;text-align:right" id="jc_scale_disp">100%</div>
+            <div style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--dim);min-width:52px" id="jc_scale_gap">—</div>
+          </div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:180px">
-          <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--dim);white-space:nowrap">Increment Scale</div>
-          <input type="range" id="jc_scale" min="10" max="100" value="100" step="5" oninput="buildJAdvisor()" style="flex:1;accent-color:var(--gold);cursor:pointer">
-          <div style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--gold);min-width:32px;text-align:right" id="jc_scale_disp">100%</div>
-          <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--dim)" id="jc_scale_gap">—</div>
+
+        <!-- Row 2: Per-slab increment weights -->
+        <div style="font-family:'DM Mono',monospace;font-size:.48rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:7px">
+          Slab Increment Weights <span style="color:var(--s4);font-size:.44rem;letter-spacing:0;text-transform:none">(relative — higher = more of the gap goes to that slab)</span>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap" id="jc_weight_rows">
+          <!-- rendered by buildJAdvisor based on slab count -->
         </div>
       </div>
 
