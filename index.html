@@ -2232,14 +2232,37 @@ function buildJAdvisor() {
   const effectiveBase = inv * discFactor;
   const totalDiscPct  = Math.round((1 - discFactor) * 100);
 
-  // Slab breakpoints — reducing room count per slab (J-curve scarcity logic)
-  // ≤40 rooms: 4 slabs (0→1, 1→60%, 60→80%, 80→100%)
-  // >40 rooms: 5 slabs (0→1, 1→60%, 60→80%, 80→90%, 90→100%)
+  // Slab breakpoints — strictly reducing room count per slab (J-curve scarcity)
+  // ≤40 rooms: 4 slabs   >40 rooms: 5 slabs
+  // Upper slabs split the remaining rooms so each is smaller than the previous:
+  //   4-slab: after 60%, give ~40% of remaining to Slab 3, ~60% to Slab 4
+  //   5-slab: after 60%, give ~40% to Slab 3, ~30% to Slab 4, ~30% to Slab 5
+  //   This guarantees Slab3 rooms < Slab2 rooms, Slab4 < Slab3, etc.
   const use5Slabs = rooms > 40;
   const r1  = 1;
-  const r60 = Math.max(2,        Math.round(rooms * 0.60));
-  const r80 = Math.max(r60 + 1,  Math.round(rooms * 0.80));
-  const r90 = Math.max(r80 + 1,  Math.round(rooms * 0.90)); // only used in 5-slab mode
+  const r60 = Math.max(2, Math.round(rooms * 0.60));
+  const remUpper = rooms - r60;
+
+  // 4-slab upper split: give ~55% to Slab3, rest to Slab4
+  // If they end up equal, shift 1 room from Slab4 to Slab3
+  let s3rooms4 = Math.max(1, Math.ceil(remUpper * 0.55));
+  let s4rooms4 = remUpper - s3rooms4;
+  if(s3rooms4 === s4rooms4 && s4rooms4 > 1) { s3rooms4 += 1; s4rooms4 -= 1; }
+  const r80_4 = Math.min(rooms - 1, r60 + s3rooms4);
+
+  // 5-slab upper split: Slab3 > Slab4 > Slab5
+  // Same rule: if any two adjacent upper slabs are equal, shift 1 room up
+  let s3rooms5 = Math.max(1, Math.ceil(remUpper * 0.50));
+  let remAfter3 = remUpper - s3rooms5;
+  let s4rooms5  = Math.max(1, Math.ceil(remAfter3 * 0.55));
+  let s5rooms5  = remAfter3 - s4rooms5;
+  if(s3rooms5 === s4rooms5 && s4rooms5 > 1) { s3rooms5 += 1; s4rooms5 -= 1; }
+  if(s4rooms5 === s5rooms5 && s5rooms5 > 1) { s4rooms5 += 1; s5rooms5 -= 1; }
+  const r80_5 = Math.min(rooms - 1, r60 + s3rooms5);
+  const r90_5 = Math.min(rooms - 1, r80_5 + s4rooms5);
+
+  const r80 = use5Slabs ? r80_5 : r80_4;
+  const r90 = r90_5; // only used when use5Slabs
 
   // Derive multipliers — 4 or 5 slabs depending on inventory size
   // Aggressive: flat early, steep spike near full
@@ -2301,7 +2324,7 @@ function buildJAdvisor() {
     {
       label: 'Slab 3', color: '#F5A623',
       range: `${r60} → ${r80}`,
-      occ: '60 – 80%',
+      occ: Math.round(r60/rooms*100) + ' – ' + Math.round(r80/rooms*100) + '%',
       mul: ideal.m3, discMul: disc.m3,
       totalJump: totalJump3, incRooms: r80 - r60,
       desc: 'Nearly full. Scarcity is visible. Remaining rooms command a meaningful premium.',
@@ -2309,7 +2332,7 @@ function buildJAdvisor() {
     {
       label: 'Slab 4', color: '#E8704A',
       range: `${r80} → ${r90}`,
-      occ: '80 – 90%',
+      occ: Math.round(r80/rooms*100) + ' – ' + Math.round(r90/rooms*100) + '%',
       mul: ideal.m4, discMul: disc.m4,
       totalJump: totalJump4, incRooms: r90 - r80,
       desc: 'High scarcity zone. Very few rooms left — rate accelerates sharply.',
@@ -2317,7 +2340,7 @@ function buildJAdvisor() {
     {
       label: 'Slab 5', color: 'var(--red)',
       range: `${r90} → ${rooms}`,
-      occ: '90 – 100%',
+      occ: Math.round(r90/rooms*100) + ' – 100%',
       mul: ideal.m5, discMul: disc.m5,
       totalJump: totalJump5, incRooms: rooms - r90,
       desc: 'Sold out zone. Last handful of rooms — capture the maximum the market will pay.',
@@ -2342,7 +2365,7 @@ function buildJAdvisor() {
     {
       label: 'Slab 3', color: '#F5A623',
       range: `${r60} → ${r80}`,
-      occ: '60 – 80%',
+      occ: Math.round(r60/rooms*100) + ' – ' + Math.round(r80/rooms*100) + '%',
       mul: ideal.m3, discMul: disc.m3,
       totalJump: totalJump3, incRooms: r80 - r60,
       desc: 'Nearly full. Scarcity is visible. Remaining rooms command a meaningful premium.',
@@ -2350,7 +2373,7 @@ function buildJAdvisor() {
     {
       label: 'Slab 4', color: 'var(--red)',
       range: `${r80} → ${rooms}`,
-      occ: '80 – 100%',
+      occ: Math.round(r80/rooms*100) + ' – 100%',
       mul: ideal.m4, discMul: disc.m4,
       totalJump: totalJump4, incRooms: rooms - r80,
       desc: 'Sold out zone. Maximum rate. Last rooms should be priced to capture the highest the market will pay.',
