@@ -2270,34 +2270,45 @@ function buildJAdvisor() {
   }
 
   // ── INCREMENT DISTRIBUTION ───────────────────────────────────────────────────
-  // Total gap = peak - inv (e.g. ₹1000 base, 30% peak → ₹300 gap)
-  // Last slabs get the highest increment; Slab 2 gets the least
-  // Cumulative weights (% of total gap allocated up to that slab):
-  //   4-slab: m2=8%,  m3=22%, m4=100%   → slab increments: 8% / 14% / 78%
-  //   5-slab: m2=5%,  m3=15%, m4=38%,   m5=100% → 5% / 10% / 23% / 62%
-  // Mild mode flattens the early slabs slightly less aggressively
+  // Total gap = peak - inv split using a geometric progression across slabs.
+  // Each slab's increment = previous × ratio, so the climb is visible throughout
+  // but still accelerates toward the final slab — no cliff, no flat early zone.
+  //
+  // Aggressive ratio 2.2 (steeper escalation):
+  //   4-slab shares: 1 / 2.2 / 4.84 / 10.65  → 5.4% / 11.8% / 26% / 57%
+  //   5-slab shares: 1 / 2.2 / 4.84 / 10.65 / 23.4 → 2.4% / 5.2% / 11.5% / 25.3% / 55.6%
+  // Mild ratio 1.7 (gentler escalation):
+  //   4-slab shares: 1 / 1.7 / 2.89 / 4.91  → 9.7% / 16.5% / 28% / 47.6%
+  //   5-slab shares: 1 / 1.7 / 2.89 / 4.91 / 8.35 → 5.5% / 9.4% / 16% / 27.2% / 46.2%
   function slabMuls(base, targetPeak) {
     const peakMul = targetPeak / base;
     const gap = peakMul - 1.0;
+    const ratio = jCurveMode === 'mild' ? 1.7 : 2.2;
+
     if(use5Slabs) {
-      const [w2, w3, w4] = jCurveMode === 'mild'
-        ? [0.08, 0.22, 0.50]
-        : [0.05, 0.15, 0.38];
+      // 5 increments (slabs 2–5), geometric: w2, w2*r, w2*r², w2*r³
+      const r = ratio;
+      const w = [1, r, r*r, r*r*r, r*r*r*r]; // slab2..slab5 relative weights (skip slab1 =0)
+      // slab1 has 0 increment; distribute gap across w[1..4]
+      const wSum = w[1]+w[2]+w[3]+w[4];
+      const c2 = w[1]/wSum, c3 = (w[1]+w[2])/wSum, c4 = (w[1]+w[2]+w[3])/wSum;
       return {
         m1: 1.0,
-        m2: +(1.0 + gap * w2).toFixed(3),
-        m3: +(1.0 + gap * w3).toFixed(3),
-        m4: +(1.0 + gap * w4).toFixed(3),
+        m2: +(1.0 + gap * c2).toFixed(3),
+        m3: +(1.0 + gap * c3).toFixed(3),
+        m4: +(1.0 + gap * c4).toFixed(3),
         m5: +peakMul.toFixed(3),
       };
     } else {
-      const [w2, w3] = jCurveMode === 'mild'
-        ? [0.12, 0.32]
-        : [0.08, 0.22];
+      // 4 slabs: 3 increments (slabs 2–4), geometric
+      const r = ratio;
+      const w = [1, r, r*r, r*r*r];
+      const wSum = w[1]+w[2]+w[3];
+      const c2 = w[1]/wSum, c3 = (w[1]+w[2])/wSum;
       return {
         m1: 1.0,
-        m2: +(1.0 + gap * w2).toFixed(3),
-        m3: +(1.0 + gap * w3).toFixed(3),
+        m2: +(1.0 + gap * c2).toFixed(3),
+        m3: +(1.0 + gap * c3).toFixed(3),
         m4: +peakMul.toFixed(3),
         m5: +peakMul.toFixed(3), // chart compat
       };
