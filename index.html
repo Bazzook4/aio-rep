@@ -2080,7 +2080,7 @@ function switchTab(tab) {
     });
   }
   if(tab==='rms') {
-    setTimeout(()=>{ buildJAdvisor(); buildSlabs(); showDemand('city'); showGeo('delhi'); runSim(); }, 60);
+    setTimeout(()=>{ buildJAdvisor(); buildSlabs(); showDemand('city'); showGeo('delhi'); }, 60);
   }
   const r = document.getElementById('d_right');
   if(r) r.scrollTop = 0; else window.scrollTo(0,0);
@@ -2303,6 +2303,7 @@ function buildJAdvisor() {
           <div style="font-family:'DM Mono',monospace;font-size:.82rem;font-weight:700;color:${s.color}">${fmt(inv * s.mul)}</div>
           <div style="font-family:'DM Mono',monospace;font-size:.52rem;color:var(--grn);background:var(--gnd);border:1px solid rgba(50,200,138,.2);padding:1px 6px;border-radius:3px">+${Math.round((s.mul-1)*100)}%</div>
           ${s.inc !== null ? `<div style="font-family:'DM Mono',monospace;font-size:.52rem;color:${s.color};background:rgba(255,255,255,.05);border:1px solid var(--bd2);padding:1px 7px;border-radius:3px">+${fmt(s.inc)}<span style="color:var(--dim);font-size:.46rem"> /room</span></div>` : ''}
+          ${s.inc !== null ? `<div style="font-family:'DM Mono',monospace;font-size:.52rem;color:var(--dim);background:var(--s3);border:1px solid var(--bd);padding:1px 7px;border-radius:3px">${fmt(inv * s.mul)} → ${fmt(inv * s.mul + s.inc * s.incRooms)}<span style="font-size:.44rem"> total range</span></div>` : ''}
           ${discDiff ? `<div style="font-size:.56rem;color:var(--dim)">→ discount: <span style="color:var(--red);font-family:'DM Mono',monospace">${fmt(effectiveBase * s.discMul)}</span></div>` : ''}
         </div>
         <div style="font-size:.63rem;color:var(--dim);line-height:1.4">${s.desc}</div>
@@ -2481,20 +2482,20 @@ function drawJCurve(rooms, base, m1, m2, m3, m4) {
   ctx.fillStyle='#EF505066';ctx.fillText('S3',toX(0.90),pad.t+13);
 }
 
-// ─── GEOGRAPHY DEMAND DATA ───
+// ─── SEASONS / GEOGRAPHY DEMAND DATA ───
 const GEO_DEMAND = {
-  delhi:      { label:'Delhi / NCR', type:'City', peak:'Oct–Mar', off:'Jun–Aug', notes:'Business travel dominates Mon–Thu. Long weekends drive leisure spikes (Republic Day, Holi, Diwali). Wedding season Nov–Feb is extremely high demand for event hotels. Summer (May–Jun) sees leisure drop but MICE picks up.' },
-  mumbai:     { label:'Mumbai', type:'City', peak:'Oct–Feb', off:'Jun–Aug', notes:'Year-round business city. Monsoon (Jun–Sep) is low leisure season but corporate bookings are stable. Ganesh Chaturthi (Aug/Sep) spikes local demand. December is strong with year-end corporate events and leisure.' },
-  bangalore:  { label:'Bengaluru', type:'City', peak:'Oct–Feb, Apr–May', off:'Jun–Aug', notes:'Technology city — steady corporate demand all year. Dasara/Dussehra in Oct is a major spike. International conference season is Jan–Mar. Monsoon slows leisure but corporate demand is resilient.' },
-  goa:        { label:'Goa', type:'Beach/Leisure', peak:'Nov–Feb', off:'Jun–Sep', notes:'India\'s most seasonal market. Peak Nov–Feb: Christmas–New Year is the single highest-rate period in India for beach resorts. Monsoon (Jun–Sep) is near-shutdown for many properties. Shoulder season (Oct, Mar) is good value and rising demand.' },
-  rajasthan:  { label:'Rajasthan (Jaipur/Udaipur/Jodhpur)', type:'Heritage/Leisure', peak:'Oct–Feb', off:'May–Aug', notes:'Heritage and leisure peak is Oct–Feb — ideal weather. Wedding destination premium in Nov–Jan (destination brides peak). Summer (May–Aug) is extremely low — high heat and no leisure travel. Pushkar Camel Fair (Nov) is a critical pricing window.' },
-  kerala:     { label:'Kerala', type:'Leisure/Backwater', peak:'Oct–Mar', off:'Jun–Sep', notes:'Backwaters and hill stations peak Oct–Mar. Monsoon (Jun–Sep) is off season for most, but "Monsoon Wellness" packages are growing. Onam (Aug/Sep) is a short cultural spike. Christmas and New Year are strong for Kovalam/Varkala/Munnar.' },
-  himachal:   { label:'Himachal Pradesh (Manali/Shimla)', type:'Hill Station', peak:'May–Jun, Dec–Jan', off:'Feb–Mar, Sep–Oct', notes:'Two peaks — summer (May–Jun: school holidays) and winter snow (Dec–Jan: Christmas/New Year). Monsoon (Jul–Aug) is low season for Manali but mid-season for Shimla. Shoulder (Sep–Oct, Feb–Mar) is very low — deep discounting needed to fill.' },
-  uttarakhand:{ label:'Uttarakhand (Rishikesh/Mussoorie/Nainital)', type:'Hill/Spiritual', peak:'May–Jun, Oct–Nov', off:'Jul–Aug', notes:'Summer school holidays (May–Jun) are peak for hill stations. Char Dham Yatra (Apr–Jun) drives Rishikesh to very high occupancy. Monsoon is low season. Oct–Nov (post-monsoon, before winter) is a strong leisure window.' },
-  kolkata:    { label:'Kolkata / West Bengal', type:'City/Cultural', peak:'Oct–Jan', off:'Jun–Aug', notes:'Durga Puja (Oct) is the single most important demand spike — 5–7 days of near-100% occupancy citywide. Post-Puja through Dec is strong. Business travel is stable year-round. Monsoon slows leisure but MICE is active.' },
-  hyderabad:  { label:'Hyderabad', type:'City/MICE', peak:'Oct–Mar', off:'Jun–Aug', notes:'Major MICE and tech city. Ramzan period sees F&B revenue spike. Business and conference demand peaks Oct–Mar. Bonalu festival (Jul) and Ganesh Chaturthi (Aug/Sep) drive short demand windows. Summer is slow for leisure.' },
-  ahmedabad:  { label:'Ahmedabad / Gujarat', type:'City/Business', peak:'Oct–Feb', off:'Jun–Aug', notes:'Navratri (Oct) is Gujarat\'s biggest demand event — 9 nights of near-100% occupancy in major Gujarat cities. Diwali is a premium window. Strong business demand from trade activity. Monsoon is low leisure season.' },
-  northeast:  { label:'North East India (Sikkim/Meghalaya/Assam)', type:'Leisure/Adventure', peak:'Oct–May', off:'Jun–Sep', notes:'Post-monsoon (Oct–Nov) and winter/spring (Dec–May) are peak. Monsoon (Jun–Sep) creates accessibility issues for most hill properties. Ziro Festival (Oct) and Hornbill (Nov–Dec) are critical windows for Arunachal and Nagaland respectively. Gangtok/Darjeeling spring (Mar–May) is very strong.' },
+  delhi:      { label:'Delhi / NCR', type:'City', peak:'Oct–Mar', high:'Sep, Apr', shoulder:'May–Jun', off:'Jul–Aug', peakReason:'Corporate travel + wedding season + festivals (Diwali, Republic Day)', highReason:'Moderate corporate demand, Navratri, Good Friday long weekends', shoulderReason:'Summer heat lowers leisure; MICE stays active', offReason:'Monsoon — leisure collapses, some corporate stays', notes:'Business travel dominates Mon–Thu. Long weekends drive leisure spikes (Republic Day, Holi, Diwali). Wedding season Nov–Feb is extremely high demand for event hotels.' },
+  mumbai:     { label:'Mumbai', type:'City', peak:'Oct–Feb', high:'Mar, Sep', shoulder:'Apr–May', off:'Jun–Aug', peakReason:'Year-end corporate events + leisure; Ganesh Chaturthi spike (Aug/Sep)', highReason:'Stable corporate travel; spring leisure picks up', shoulderReason:'Pre-monsoon corporate slowdown; leisure gap', offReason:'Monsoon — leisure near zero, corporate still present', notes:'Year-round business city. Monsoon (Jun–Sep) is low leisure season but corporate bookings are stable. December is strong with year-end corporate events.' },
+  bangalore:  { label:'Bengaluru', type:'City', peak:'Oct–Feb, Apr–May', high:'Mar, Sep', shoulder:'Jun', off:'Jul–Aug', peakReason:'Tech conference season Jan–Mar; Dasara Oct; stable corporate demand', highReason:'Post-monsoon recovery; strong corporate bookings', shoulderReason:'Start of monsoon — leisure dips, corporate resilient', offReason:'Monsoon — leisure very low', notes:'Technology city — steady corporate demand all year. Dasara/Dussehra in Oct is a major spike. International conference season is Jan–Mar.' },
+  goa:        { label:'Goa', type:'Beach/Leisure', peak:'Nov–Feb', high:'Oct, Mar', shoulder:'Apr–May', off:'Jun–Sep', peakReason:'Christmas–New Year is highest-rate period; ideal beach weather', highReason:'Pre/post-peak shoulder months with rising/fading demand', shoulderReason:'Pre-monsoon — still some leisure but rate softening', offReason:'Monsoon — near-shutdown for beach properties Jun–Sep', notes:'India\'s most seasonal market. Peak Nov–Feb: Christmas–New Year is highest-rate period. Monsoon (Jun–Sep) is near-shutdown. Shoulder season (Oct, Mar) is good value.' },
+  rajasthan:  { label:'Rajasthan (Jaipur/Udaipur/Jodhpur)', type:'Heritage/Leisure', peak:'Oct–Feb', high:'Mar, Sep', shoulder:'Apr, Aug', off:'May–Jul', peakReason:'Ideal weather; wedding destination premium Nov–Jan; Pushkar Camel Fair (Nov)', highReason:'Post-monsoon revival; mild weather; Navratri/Dussehra (Sep/Oct)', shoulderReason:'Heat building (Apr) or fading monsoon (Aug) — limited leisure', offReason:'Extreme heat (May–Jun) + Monsoon (Jul) — very low leisure travel', notes:'Heritage and leisure peak is Oct–Feb. Summer (May–Aug) is extremely low — high heat and no leisure travel. Pushkar Camel Fair (Nov) is a critical pricing window.' },
+  kerala:     { label:'Kerala', type:'Leisure/Backwater', peak:'Oct–Mar', high:'Apr, Sep', shoulder:'Aug', off:'Jun–Jul', peakReason:'Backwaters + hill stations peak; Christmas/New Year strong at coastal resorts', highReason:'Good weather; pre-monsoon in Apr; Onam (Aug/Sep) cultural spike', shoulderReason:'Onam spike in Aug; "Monsoon Wellness" packages growing', offReason:'Monsoon off season — accessibility issues for most properties', notes:'Backwaters and hill stations peak Oct–Mar. Monsoon (Jun–Sep) is off season but Monsoon Wellness packages are growing. Christmas and New Year are strong for Kovalam/Varkala.' },
+  himachal:   { label:'Himachal Pradesh (Manali/Shimla)', type:'Hill Station', peak:'May–Jun, Dec–Jan', high:'Jul (Shimla), Nov', shoulder:'Sep–Oct, Feb–Mar', off:'Feb–Mar (valley), Aug (Manali)', peakReason:'Summer school holidays (May–Jun); Winter snow & Christmas/New Year (Dec–Jan)', highReason:'Shimla active in Jul; Kullu Dussehra (Oct) drives local demand', shoulderReason:'Post-monsoon/pre-winter (Sep–Oct) and pre-summer (Feb–Mar) — very low', offReason:'Monsoon Jul–Aug low for Manali; Feb–Mar is valley off-season', notes:'Two peaks — summer (May–Jun) and winter snow (Dec–Jan). Monsoon (Jul–Aug) is low season for Manali. Shoulder needs deep discounting.' },
+  uttarakhand:{ label:'Uttarakhand (Rishikesh/Mussoorie/Nainital)', type:'Hill/Spiritual', peak:'May–Jun, Oct–Nov', high:'Apr, Dec', shoulder:'Mar, Sep', off:'Jul–Aug', peakReason:'School holidays (May–Jun); Char Dham Yatra (Apr–Jun); post-monsoon leisure (Oct–Nov)', highReason:'Yatra start (Apr); New Year travel to hill stations (Dec)', shoulderReason:'Pre-season (Mar) and post-monsoon recovery (Sep) — moderate demand', offReason:'Monsoon — low season; accessibility issues in Manali/Kedarnath belt', notes:'Summer school holidays (May–Jun) are peak. Char Dham Yatra (Apr–Jun) drives Rishikesh to very high occupancy. Oct–Nov is a strong leisure window.' },
+  kolkata:    { label:'Kolkata / West Bengal', type:'City/Cultural', peak:'Oct–Jan', high:'Feb–Mar, Sep', shoulder:'Apr–May', off:'Jun–Aug', peakReason:'Durga Puja (Oct) — 5–7 days near-100% occupancy citywide; strong Dec year-end', highReason:'Stable corporate; Holi; post-Puja momentum into winter', shoulderReason:'Pre-monsoon corporate travel; some MICE activity', offReason:'Monsoon — leisure very low; MICE still present', notes:'Durga Puja (Oct) is the single most important demand spike. Post-Puja through Dec is strong. Business travel is stable year-round.' },
+  hyderabad:  { label:'Hyderabad', type:'City/MICE', peak:'Oct–Mar', high:'Apr, Sep', shoulder:'May–Jun', off:'Jul–Aug', peakReason:'MICE and tech conference season; Bonalu festival (Jul) and Ganesh Chaturthi (Aug/Sep) spikes', highReason:'Stable corporate; post-monsoon recovery; moderate conferences', shoulderReason:'Pre-monsoon corporate slowdown; leisure gap', offReason:'Monsoon — leisure near zero, some corporate', notes:'Major MICE and tech city. Business and conference demand peaks Oct–Mar. Bonalu festival (Jul) and Ganesh Chaturthi (Aug/Sep) drive short demand windows.' },
+  ahmedabad:  { label:'Ahmedabad / Gujarat', type:'City/Business', peak:'Oct–Feb', high:'Mar, Sep', shoulder:'Apr–May', off:'Jun–Aug', peakReason:'Navratri (Oct) — 9 nights near-100% occupancy; Diwali premium; strong trade activity', highReason:'Post-winter business recovery; moderate corporate travel', shoulderReason:'Pre-monsoon; trade activity continues but leisure drops', offReason:'Monsoon — leisure very low; some trade/business stays', notes:'Navratri (Oct) is Gujarat\'s biggest demand event. Diwali is a premium window. Strong business demand from trade activity year-round.' },
+  northeast:  { label:'North East India (Sikkim/Meghalaya/Assam)', type:'Leisure/Adventure', peak:'Oct–May', high:'Sep, Jun', shoulder:'Jun (gateway)', off:'Jul–Aug', peakReason:'Post-monsoon (Oct–Nov) and winter/spring (Dec–May) — Ziro (Oct), Hornbill (Nov–Dec), Darjeeling spring (Mar–May)', highReason:'Pre-monsoon travel rush; late post-monsoon recovery', shoulderReason:'Gateway months with inconsistent weather and demand', offReason:'Monsoon — accessibility issues for most hill properties Jun–Sep', notes:'Post-monsoon (Oct–Nov) and winter/spring (Dec–May) are peak. Monsoon (Jun–Sep) creates accessibility issues. Hornbill Festival (Nov–Dec) is a critical window.' },
 };
 
 function copyRMSPitch() {
@@ -2667,7 +2668,7 @@ function buildRMSTabHTML() {
 
       <!-- Geography section -->
       <div style="margin-top:18px;font-family:'DM Mono',monospace;font-size:.52rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:7px">
-        Your Geography
+        Seasons by Location
         <span style="flex:1;height:1px;background:var(--bd)"></span>
       </div>
       <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px" id="geoTabs">
@@ -2676,267 +2677,45 @@ function buildRMSTabHTML() {
       <div id="geoOutput"></div>
     </div>
 
-    <!-- ══════════════════════════════════════
-         PRICING SIMULATOR
-    ═══════════════════════════════════════ -->
-    <div class="blk au" id="pricingSimBlock">
-      <div class="bh blu">🧮 Pricing Simulator — Per-Day Output</div>
-      <div style="font-size:.7rem;color:var(--dim);line-height:1.55;margin-bottom:14px">
-        Set your base rate and all multiplier factors. The simulator combines them to show the <strong style="color:var(--w)">actual rate for each day</strong> over the next 30 days — and flags dangerous combinations.
-      </div>
-
-      <!-- BASE RATE + ROOMS (shared with slab calc above) -->
-      <div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:12px;margin-bottom:14px">
-        <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:10px">Hotel Settings</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-          <div class="calc-field"><div class="calc-lbl">Base Rate (₹)</div>
-            <div class="calc-row"><div class="calc-pre">₹</div><input class="calc-inp" id="ps_base" type="number" value="2000" min="1" oninput="runSim()"></div></div>
-          <div class="calc-field"><div class="calc-lbl">Total Rooms</div>
-            <div class="calc-row"><input class="calc-inp" id="ps_rooms" type="number" value="20" min="1" oninput="runSim()"></div></div>
-          <div class="calc-field"><div class="calc-lbl">Current Occupancy %</div>
-            <div class="calc-row"><input class="calc-inp" id="ps_occ" type="number" value="60" min="0" max="100" oninput="runSim()"><div class="calc-pre" style="border-left:1px solid var(--bd2);border-right:none">%</div></div></div>
-        </div>
-      </div>
-
-      <!-- OCCUPANCY SLABS -->
-      <div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:12px;margin-bottom:10px">
-        <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:10px">Occupancy Slabs</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px">
-          <div class="calc-field"><div class="calc-lbl">0–1 room</div>
-            <div class="calc-row"><input class="calc-inp" id="ps_s1" type="number" value="1.0" step="0.05" min="0.1" max="5" oninput="runSim()"><div class="calc-pre" style="border-left:1px solid var(--bd2);border-right:none">×</div></div></div>
-          <div class="calc-field"><div class="calc-lbl">60% full</div>
-            <div class="calc-row"><input class="calc-inp" id="ps_s2" type="number" value="1.3" step="0.05" min="0.1" max="5" oninput="runSim()"><div class="calc-pre" style="border-left:1px solid var(--bd2);border-right:none">×</div></div></div>
-          <div class="calc-field"><div class="calc-lbl">80% full</div>
-            <div class="calc-row"><input class="calc-inp" id="ps_s3" type="number" value="1.7" step="0.05" min="0.1" max="5" oninput="runSim()"><div class="calc-pre" style="border-left:1px solid var(--bd2);border-right:none">×</div></div></div>
-          <div class="calc-field"><div class="calc-lbl">100% full</div>
-            <div class="calc-row"><input class="calc-inp" id="ps_s4" type="number" value="2.2" step="0.05" min="0.1" max="5" oninput="runSim()"><div class="calc-pre" style="border-left:1px solid var(--bd2);border-right:none">×</div></div></div>
-        </div>
-      </div>
-
-      <!-- WEEKDAY MULTIPLIERS -->
-      <div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:12px;margin-bottom:10px">
-        <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--grn);margin-bottom:10px">Weekday Multipliers</div>
-        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px">
-          ${[['Mon','ps_w1','1.0'],['Tue','ps_w2','1.0'],['Wed','ps_w3','1.0'],['Thu','ps_w4','1.1'],['Fri','ps_w5','1.3'],['Sat','ps_w6','1.5'],['Sun','ps_w7','1.2']].map(([d,id,v])=>`
-          <div class="calc-field"><div class="calc-lbl" style="text-align:center">${d}</div>
-            <div class="calc-row" style="flex-direction:column;height:auto;padding:4px 0;border:none;background:none;gap:2px">
-              <input class="calc-inp" id="${id}" type="number" value="${v}" step="0.05" min="0.1" max="5" oninput="runSim()" style="text-align:center;border:1.5px solid var(--bd2);border-radius:5px;width:100%;padding:5px 2px">
-            </div>
-          </div>`).join('')}
-        </div>
-      </div>
-
-      <!-- BOOKING WINDOW -->
-      <div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:12px;margin-bottom:10px">
-        <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:10px">Booking Window (days before check-in)</div>
-        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px">
-          ${[['90d+','ps_b1','0.85'],['60d','ps_b2','0.9'],['30d','ps_b3','1.0'],['14d','ps_b4','1.1'],['7d','ps_b5','1.2'],['3d','ps_b6','1.35'],['0d','ps_b7','1.5']].map(([d,id,v])=>`
-          <div class="calc-field"><div class="calc-lbl" style="text-align:center">${d}</div>
-            <div class="calc-row" style="flex-direction:column;height:auto;padding:4px 0;border:none;background:none;gap:2px">
-              <input class="calc-inp" id="${id}" type="number" value="${v}" step="0.05" min="0.1" max="5" oninput="runSim()" style="text-align:center;border:1.5px solid var(--bd2);border-radius:5px;width:100%;padding:5px 2px">
-            </div>
-          </div>`).join('')}
-        </div>
-        <div style="font-size:.6rem;color:var(--dim);margin-top:8px">Last-minute (0–3 days) typically commands the highest multiplier — 60% of city hotel bookings happen here.</div>
-      </div>
-
-      <!-- MONTH MULTIPLIERS -->
-      <div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:12px;margin-bottom:14px">
-        <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--blu);margin-bottom:10px">Month-wise Seasonality</div>
-        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:5px">
-          ${[['Jan','ps_mn1','1.2'],['Feb','ps_mn2','1.15'],['Mar','ps_mn3','1.1'],['Apr','ps_mn4','1.0'],['May','ps_mn5','0.9'],['Jun','ps_mn6','0.8'],['Jul','ps_mn7','0.75'],['Aug','ps_mn8','0.8'],['Sep','ps_mn9','0.9'],['Oct','ps_mn10','1.2'],['Nov','ps_mn11','1.3'],['Dec','ps_mn12','1.25']].map(([m,id,v])=>`
-          <div class="calc-field"><div class="calc-lbl" style="text-align:center">${m}</div>
-            <div class="calc-row" style="flex-direction:column;height:auto;padding:4px 0;border:none;background:none;gap:2px">
-              <input class="calc-inp" id="${id}" type="number" value="${v}" step="0.05" min="0.1" max="5" oninput="runSim()" style="text-align:center;border:1.5px solid var(--bd2);border-radius:5px;width:100%;padding:5px 2px">
-            </div>
-          </div>`).join('')}
-        </div>
-      </div>
-
-      <!-- OUTPUT -->
-      <div id="simWarnings" style="display:none;margin-bottom:12px"></div>
-      <div id="simOutput"></div>
-    </div>
   </div>`;
 }
 
-// ═══════════════════════════════════
-// PRICING SIMULATOR ENGINE
-// ═══════════════════════════════════
-function getSimInputs() {
-  const g = id => parseFloat(document.getElementById(id)?.value) || 0;
-  return {
-    base:  g('ps_base') || 2000,
-    rooms: parseInt(document.getElementById('ps_rooms')?.value) || 20,
-    occ:   g('ps_occ') / 100,
-    // occupancy slabs
-    s1: g('ps_s1') || 1.0, s2: g('ps_s2') || 1.3,
-    s3: g('ps_s3') || 1.7, s4: g('ps_s4') || 2.2,
-    // weekday [Mon=0 .. Sun=6]
-    w: [g('ps_w1'),g('ps_w2'),g('ps_w3'),g('ps_w4'),g('ps_w5'),g('ps_w6'),g('ps_w7')],
-    // booking window breakpoints [90+, 60, 30, 14, 7, 3, 0]
-    b: [g('ps_b1'),g('ps_b2'),g('ps_b3'),g('ps_b4'),g('ps_b5'),g('ps_b6'),g('ps_b7')],
-    // months [Jan=0 .. Dec=11]
-    mn: [g('ps_mn1'),g('ps_mn2'),g('ps_mn3'),g('ps_mn4'),g('ps_mn5'),g('ps_mn6'),
-         g('ps_mn7'),g('ps_mn8'),g('ps_mn9'),g('ps_mn10'),g('ps_mn11'),g('ps_mn12')],
-  };
-}
-
-function occMul(p) {
-  // Interpolate across the 4 slab breakpoints: 0%, 60%, 80%, 100%
-  if(p.occ >= 1.0)  return p.s4;
-  if(p.occ >= 0.80) return p.s3 + (p.s4 - p.s3) * ((p.occ - 0.80) / 0.20);
-  if(p.occ >= 0.60) return p.s2 + (p.s3 - p.s2) * ((p.occ - 0.60) / 0.20);
-  return p.s1 + (p.s2 - p.s1) * (p.occ / 0.60);
-}
-
-function bookingWindowMul(daysAhead, p) {
-  // breakpoints: 90, 60, 30, 14, 7, 3, 0
-  const bp = [90, 60, 30, 14, 7, 3, 0];
-  const vals = p.b;
-  if(daysAhead >= 90) return vals[0];
-  if(daysAhead <= 0)  return vals[6];
-  for(let i = 0; i < bp.length - 1; i++) {
-    if(daysAhead <= bp[i] && daysAhead > bp[i+1]) {
-      const t = (bp[i] - daysAhead) / (bp[i] - bp[i+1]);
-      return vals[i] + (vals[i+1] - vals[i]) * t;
-    }
-  }
-  return 1.0;
-}
-
-function runSim() {
-  const p    = getSimInputs();
-  const fmt  = n => '₹' + Math.round(n).toLocaleString('en-IN');
-  const today = new Date();
-
-  const DANGER_HIGH = 3.5;  // combined ratio above this → red alert
-  const DANGER_LOW  = 0.45; // combined ratio below this → red alert
-  const WARN_HIGH   = 2.8;
-  const WARN_LOW    = 0.6;
-
-  // Validate: slabs must be ascending
-  const warnings = [];
-  if(p.s1 > p.s2 || p.s2 > p.s3 || p.s3 > p.s4)
-    warnings.push({ level:'danger', msg:'⚠️ Occupancy slabs are not in ascending order. The model expects Slab1 ≤ Slab2 ≤ Slab3 ≤ Slab4.' });
-
-  const rows = [];
-  let minRatio = Infinity, maxRatio = -Infinity;
-
-  for(let d = 0; d < 30; d++) {
-    const date     = new Date(today); date.setDate(today.getDate() + d);
-    const dow      = (date.getDay() + 6) % 7; // 0=Mon..6=Sun
-    const month    = date.getMonth();          // 0=Jan..11=Dec
-    const daysAhead = d; // booking is "today" for a stay d days from now
-
-    const wMul  = p.w[dow]  || 1;
-    const bMul  = bookingWindowMul(daysAhead, p);
-    const mMul  = p.mn[month] || 1;
-    const oMul  = occMul(p);
-    const combined = oMul * wMul * bMul * mMul;
-    const finalRate = p.base * combined;
-
-    if(combined > maxRatio) maxRatio = combined;
-    if(combined < minRatio) minRatio = combined;
-
-    let flag = '';
-    if(combined >= DANGER_HIGH) flag = 'danger';
-    else if(combined <= DANGER_LOW) flag = 'danger';
-    else if(combined >= WARN_HIGH) flag = 'warn';
-    else if(combined <= WARN_LOW) flag = 'warn';
-
-    rows.push({ date, dow, month, daysAhead, wMul, bMul, mMul, oMul, combined, finalRate, flag });
-  }
-
-  // Build global warnings
-  if(maxRatio >= DANGER_HIGH)
-    warnings.push({ level:'danger', msg:`🚨 Maximum combined ratio is <strong>${maxRatio.toFixed(2)}×</strong> — this will price some days at <strong>${fmt(p.base * maxRatio)}</strong> which is ${Math.round(maxRatio * 100 - 100)}% above base. Very likely to kill conversions. Check your multipliers.` });
-  else if(maxRatio >= WARN_HIGH)
-    warnings.push({ level:'warn', msg:`⚠️ Combined ratio reaches <strong>${maxRatio.toFixed(2)}×</strong> on some days (${fmt(p.base * maxRatio)}). Review if this is intentional.` });
-
-  if(minRatio <= DANGER_LOW)
-    warnings.push({ level:'danger', msg:`🚨 Minimum combined ratio is <strong>${minRatio.toFixed(2)}×</strong> — pricing some days at <strong>${fmt(p.base * minRatio)}</strong> which is ${Math.round(100 - minRatio * 100)}% below base. Risk of severe RevPAR damage.` });
-  else if(minRatio <= WARN_LOW)
-    warnings.push({ level:'warn', msg:`⚠️ Combined ratio drops to <strong>${minRatio.toFixed(2)}×</strong> on some days (${fmt(p.base * minRatio)}). Check if low-season + early-booking multipliers are stacking too aggressively.` });
-
-  // Render warnings
-  const wEl = document.getElementById('simWarnings');
-  if(wEl) {
-    if(warnings.length) {
-      wEl.style.display = 'block';
-      wEl.innerHTML = warnings.map(w => `
-        <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:7px;margin-bottom:6px;
-          background:${w.level==='danger'?'rgba(239,80,80,.1)':'rgba(200,164,74,.1)'};
-          border:1px solid ${w.level==='danger'?'rgba(239,80,80,.35)':'rgba(200,164,74,.35)'}">
-          <div style="font-size:.7rem;color:${w.level==='danger'?'var(--red)':'var(--gold)'};line-height:1.6">${w.msg}</div>
-        </div>`).join('');
-    } else {
-      wEl.style.display = 'none';
-      wEl.innerHTML = '';
-    }
-  }
-
-  // Render day table
-  const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const outEl = document.getElementById('simOutput');
-  if(!outEl) return;
-
-  outEl.innerHTML = `
-    <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:8px;display:flex;align-items:center;gap:7px">
-      Next 30 Days — Projected Rates
-      <span style="flex:1;height:1px;background:var(--bd)"></span>
-      <span style="color:var(--grn)">min ${fmt(p.base * minRatio)}</span>
-      <span style="color:var(--dim)">·</span>
-      <span style="color:var(--red)">max ${fmt(p.base * maxRatio)}</span>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:3px">
-      ${rows.map(r => {
-        const bg = r.flag === 'danger' ? 'rgba(239,80,80,.08)' : r.flag === 'warn' ? 'rgba(200,164,74,.07)' : 'var(--s2)';
-        const bd = r.flag === 'danger' ? 'rgba(239,80,80,.35)' : r.flag === 'warn' ? 'rgba(200,164,74,.3)' : 'var(--bd)';
-        const rateColor = r.combined >= WARN_HIGH ? 'var(--red)' : r.combined <= WARN_LOW ? 'var(--blu)' : 'var(--grn)';
-        const dd = String(r.date.getDate()).padStart(2,'0');
-        const isWeekend = r.dow >= 4;
-        return `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;background:${bg};border:1px solid ${bd}">
-          <div style="font-family:'DM Mono',monospace;font-size:.62rem;color:${isWeekend?'var(--gold)':'var(--dim)'};width:30px;flex-shrink:0">${DAYS[r.dow]}</div>
-          <div style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--dim);width:52px;flex-shrink:0">${dd} ${MONTHS[r.month]}</div>
-          <div style="display:flex;gap:4px;flex:1;flex-wrap:wrap">
-            <span style="font-size:.55rem;padding:1px 5px;border-radius:3px;background:rgba(239,80,80,.1);color:var(--red);border:1px solid rgba(239,80,80,.2)">occ ${r.oMul.toFixed(2)}×</span>
-            <span style="font-size:.55rem;padding:1px 5px;border-radius:3px;background:rgba(50,200,138,.08);color:var(--grn);border:1px solid rgba(50,200,138,.15)">${DAYS[r.dow]} ${r.wMul.toFixed(2)}×</span>
-            <span style="font-size:.55rem;padding:1px 5px;border-radius:3px;background:rgba(200,164,74,.09);color:var(--gold);border:1px solid rgba(200,164,74,.2)">${r.daysAhead}d ${r.bMul.toFixed(2)}×</span>
-            <span style="font-size:.55rem;padding:1px 5px;border-radius:3px;background:rgba(91,141,239,.09);color:var(--blu);border:1px solid rgba(91,141,239,.2)">${MONTHS[r.month]} ${r.mMul.toFixed(2)}×</span>
-          </div>
-          <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--dim);flex-shrink:0">${r.combined.toFixed(2)}×</div>
-          <div style="font-family:'DM Mono',monospace;font-size:.78rem;font-weight:600;color:${rateColor};min-width:72px;text-align:right;flex-shrink:0">${fmt(r.finalRate)}</div>
-          ${r.flag ? `<div style="font-size:.6rem;flex-shrink:0">${r.flag==='danger'?'🚨':'⚠️'}</div>` : '<div style="width:14px;flex-shrink:0"></div>'}
-        </div>`;
-      }).join('')}
-    </div>`;
-}
 
 function showGeo(key) {
   Object.keys(GEO_DEMAND).forEach(k => document.getElementById('geo_'+k)?.classList.toggle('on', k===key));
   const g = GEO_DEMAND[key];
   const el = document.getElementById('geoOutput');
   if(!el) return;
+
+  const tiers = [
+    { key:'peak',     label:'Peak',          color:'var(--grn)',  bg:'var(--gnd)',                        bd:'rgba(50,200,138,.2)',  action:'Raise rates 4–6 weeks out — max slab pricing', reason: g.peakReason },
+    { key:'high',     label:'High Demand',   color:'#7EC8E3',     bg:'rgba(126,200,227,.06)',              bd:'rgba(126,200,227,.2)', action:'Price at Slab 2–3 — occupancy will be strong',  reason: g.highReason },
+    { key:'shoulder', label:'Shoulder',      color:'var(--gold)', bg:'rgba(200,164,74,.06)',              bd:'rgba(200,164,74,.2)',  action:'Steady Slab 1–2 — monitor and adjust weekly',   reason: g.shoulderReason },
+    { key:'off',      label:'Off Season',    color:'var(--red)',   bg:'var(--rdd)',                        bd:'rgba(239,80,80,.2)',   action:'Fill rooms at Slab 1 — volume over rate',        reason: g.offReason },
+  ];
+
   el.innerHTML = `<div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:14px">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
       <div style="font-size:.82rem;font-weight:700;color:var(--w)">${g.label}</div>
       <div style="font-family:'DM Mono',monospace;font-size:.52rem;padding:2px 7px;border-radius:3px;background:var(--gd);border:1px solid var(--gb);color:var(--gold)">${g.type}</div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-      <div style="background:var(--gnd);border:1px solid rgba(50,200,138,.2);border-radius:6px;padding:9px 11px">
-        <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--grn);margin-bottom:4px">Peak Season</div>
-        <div style="font-size:.78rem;font-weight:600;color:var(--w)">${g.peak}</div>
-        <div style="font-size:.62rem;color:var(--grn);margin-top:2px">Raise rates 4–6 weeks out</div>
-      </div>
-      <div style="background:var(--rdd);border:1px solid rgba(239,80,80,.2);border-radius:6px;padding:9px 11px">
-        <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:4px">Off Season</div>
-        <div style="font-size:.78rem;font-weight:600;color:var(--w)">${g.off}</div>
-        <div style="font-size:.62rem;color:var(--red);margin-top:2px">Use Slab 1–2 rates to fill rooms</div>
-      </div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+      ${tiers.map(t => {
+        const months = g[t.key];
+        if(!months) return '';
+        return `<div style="background:${t.bg};border:1px solid ${t.bd};border-radius:7px;padding:9px 12px;display:flex;align-items:flex-start;gap:12px">
+          <div style="min-width:90px;flex-shrink:0">
+            <div style="font-family:'DM Mono',monospace;font-size:.48rem;letter-spacing:1.5px;text-transform:uppercase;color:${t.color};margin-bottom:3px">${t.label}</div>
+            <div style="font-size:.8rem;font-weight:700;color:var(--w)">${months}</div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:.65rem;color:#C0C0C0;line-height:1.55;margin-bottom:4px">${t.reason}</div>
+            <div style="font-family:'DM Mono',monospace;font-size:.48rem;color:${t.color};letter-spacing:.5px">${t.action}</div>
+          </div>
+        </div>`;
+      }).join('')}
     </div>
-    <div style="font-size:.72rem;color:#C0C0C0;line-height:1.65">${g.notes}</div>
+    <div style="font-size:.68rem;color:var(--dim);line-height:1.6">${g.notes}</div>
   </div>`;
 }
 
@@ -2950,30 +2729,85 @@ function showDemand(type) {
   renderDemandCalendar(type);
 }
 
+// Map abbreviated month names to month index (0-based)
+const MONTH_IDX = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+const MONTH_NAMES_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTH_NAMES_FULL  = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+// Derive the display year for a given calendar month (wrap to next year if month < current)
+function calYear(monthAbbr) {
+  const today = new Date();
+  const cur = today.getMonth();
+  const idx = MONTH_IDX[monthAbbr.toLowerCase().slice(0,3)];
+  if(idx === undefined) return today.getFullYear();
+  return idx >= cur ? today.getFullYear() : today.getFullYear() + 1;
+}
+
+// Format a date number + month abbreviation as "25 Dec 2026"
+function fmtCalDate(day, monthAbbr) {
+  const yr = calYear(monthAbbr);
+  const mIdx = MONTH_IDX[monthAbbr.toLowerCase().slice(0,3)];
+  return `${String(day).padStart(2,'0')} ${MONTH_NAMES_SHORT[mIdx]} ${yr}`;
+}
+
+// Replace inline date patterns like "(24–26)" or "(14–17)" or "(26)" with formatted dates
+function inlineDates(text, monthAbbr) {
+  // Pattern: (dd–dd) range or (dd) single, optionally with letters like tentative
+  return text.replace(/\((\d{1,2})(?:–(\d{1,2}))?\)/g, (match, d1, d2) => {
+    const s = fmtCalDate(parseInt(d1), monthAbbr);
+    if(d2) {
+      const e = fmtCalDate(parseInt(d2), monthAbbr);
+      return `<span style="font-family:'DM Mono',monospace;color:var(--gold);font-size:.62rem">${s} – ${e}</span>`;
+    }
+    return `<span style="font-family:'DM Mono',monospace;color:var(--gold);font-size:.62rem">${s}</span>`;
+  });
+}
+
 function renderDemandCalendar(type) {
   const data = DEMAND_EVENTS[type];
   const el = document.getElementById('demandCalendar');
   if(!el || !data) return;
 
-  // Text format — prose style
-  const todayMonth = new Date().toLocaleString('en-IN',{month:'short'});
+  const today = new Date();
+  const todayMonthIdx = today.getMonth();
+
   const rows = data.map(m => {
+    const mIdx = MONTH_IDX[m.month.toLowerCase().slice(0,3)];
+    const yr = calYear(m.month);
     const isOff = m.events.some(e => e.toLowerCase().includes('chaturmas')||e.toLowerCase().includes('off season')||e.toLowerCase().includes('no muhurat')||e.toLowerCase().includes('zero'));
     const isPeak = m.events.some(e => e.includes('⭐⭐⭐'));
-    const isToday = m.month.toLowerCase().startsWith(todayMonth.toLowerCase());
-    const border = isToday ? 'var(--blu)' : isPeak ? 'var(--gold)' : isOff ? 'var(--red)' : 'var(--bd2)';
-    const bg = isToday ? 'rgba(91,141,239,.08)' : 'var(--s2)';
-    const badge = isPeak ? `<span style="font-family:'DM Mono',monospace;font-size:.46rem;padding:1px 5px;border-radius:2px;background:var(--gd);color:var(--gold);border:1px solid var(--gb)">PEAK</span>` :
-                  isOff  ? `<span style="font-family:'DM Mono',monospace;font-size:.46rem;padding:1px 5px;border-radius:2px;background:var(--rdd);color:var(--red);border:1px solid rgba(239,80,80,.2)">LOW</span>` : '';
-    const todayBadge = isToday ? `<span style="font-family:'DM Mono',monospace;font-size:.46rem;padding:1px 6px;border-radius:2px;background:var(--bld);color:var(--blu);border:1px solid rgba(91,141,239,.3)">◉ TODAY</span>` : '';
-    const monthColor = isToday ? 'var(--blu)' : 'var(--w)';
-    return `<div style="border-left:3px solid ${border};background:${bg};border-radius:0 6px 6px 0;padding:9px 11px;margin-bottom:5px${isToday?';box-shadow:0 0 0 1px rgba(91,141,239,.15)':''}">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
-        <div style="font-family:'DM Mono',monospace;font-size:.72rem;font-weight:${isToday?'700':'500'};color:${monthColor};min-width:28px">${m.month}</div>
-        <div style="font-size:.65rem;color:var(--dim);flex:1">${m.wtype}</div>
-        ${todayBadge}${badge}
+    const isHigh = !isPeak && m.events.some(e => e.includes('⭐⭐'));
+    const isToday = mIdx === todayMonthIdx && yr === today.getFullYear();
+    const border = isToday ? 'var(--blu)' : isPeak ? 'var(--gold)' : isOff ? 'var(--red)' : isHigh ? 'rgba(126,200,227,.5)' : 'var(--bd2)';
+    const bg = isToday ? 'rgba(91,141,239,.07)' : 'var(--s2)';
+
+    const demandBadge = isPeak
+      ? `<span style="font-family:'DM Mono',monospace;font-size:.44rem;padding:1px 5px;border-radius:2px;background:var(--gd);color:var(--gold);border:1px solid var(--gb)">PEAK</span>`
+      : isHigh
+      ? `<span style="font-family:'DM Mono',monospace;font-size:.44rem;padding:1px 5px;border-radius:2px;background:rgba(126,200,227,.08);color:#7EC8E3;border:1px solid rgba(126,200,227,.25)">HIGH</span>`
+      : isOff
+      ? `<span style="font-family:'DM Mono',monospace;font-size:.44rem;padding:1px 5px;border-radius:2px;background:var(--rdd);color:var(--red);border:1px solid rgba(239,80,80,.2)">OFF</span>`
+      : '';
+
+    const todayBadge = isToday
+      ? `<span style="font-family:'DM Mono',monospace;font-size:.44rem;padding:1px 6px;border-radius:2px;background:var(--bld);color:var(--blu);border:1px solid rgba(91,141,239,.3)">◉ NOW</span>`
+      : '';
+
+    const monthColor = isToday ? 'var(--blu)' : isPeak ? 'var(--gold)' : isOff ? 'var(--red)' : 'var(--w)';
+
+    // Build event lines — each event on its own line with inline dates formatted
+    const eventLines = m.events.map(e => {
+      const clean = e.replace(/⭐+/g,'').trim();
+      return `<div style="font-size:.67rem;color:#C0C0C0;line-height:1.6">${inlineDates(clean, m.month)}</div>`;
+    }).join('');
+
+    return `<div style="border-left:3px solid ${border};background:${bg};border-radius:0 6px 6px 0;padding:8px 11px;margin-bottom:4px${isToday?';box-shadow:0 0 0 1px rgba(91,141,239,.12)':''}">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
+        <div style="font-family:'DM Mono',monospace;font-size:.7rem;font-weight:600;color:${monthColor};min-width:82px">${m.month} ${yr}</div>
+        <div style="font-size:.6rem;color:var(--dim);flex:1;font-style:italic">${m.wtype}</div>
+        <div style="display:flex;gap:4px">${todayBadge}${demandBadge}</div>
       </div>
-      <div style="font-size:.68rem;color:#C0C0C0;line-height:1.55">${m.events.join(' · ')}</div>
+      ${eventLines}
     </div>`;
   });
 
@@ -3021,7 +2855,7 @@ function openMode(mode) {
     if(pr && !pr.innerHTML.trim()) pr.innerHTML = buildPitchGuide();
   } else if(mode === 'rms' && !pane.innerHTML.trim()) {
     pane.innerHTML = buildRMSTabHTML();
-    setTimeout(()=>{ buildJAdvisor(); buildSlabs(); showDemand('city'); showGeo('delhi'); runSim(); }, 60);
+    setTimeout(()=>{ buildJAdvisor(); buildSlabs(); showDemand('city'); showGeo('delhi'); }, 60);
   } else if(mode === 'videos' && !pane.innerHTML.trim()) {
     pane.innerHTML = buildVideosHTML();
   } else if(mode === 'pricing' && !pane.innerHTML.trim()) {
