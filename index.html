@@ -2257,20 +2257,20 @@ function buildJAdvisor() {
   const disc  = slabMuls(effectiveBase, peak);
 
   // Total rate jump into each slab (from previous slab's rate)
-  // incRooms = rooms in that slab; per-room = totalJump / incRooms
-  const slabRooms1 = r1 + 1;                  // rooms 0..r1
-  const slabRooms2 = r60 - r1;                // rooms r1+1..r60
-  const slabRooms3 = r80 - r60;               // rooms r60+1..r80
-  const slabRooms4 = rooms - r80;             // rooms r80+1..rooms
+  // Slab end = next slab's start (matches Aiosell RMS convention)
+  const slabRooms1 = r1;                       // 0 → r1
+  const slabRooms2 = r60 - r1;                 // r1 → r60
+  const slabRooms3 = r80 - r60;               // r60 → r80
+  const slabRooms4 = rooms - r80;             // r80 → rooms
   const totalJump2 = (ideal.m2 - ideal.m1) * inv;
   const totalJump3 = (ideal.m3 - ideal.m2) * inv;
   const totalJump4 = (ideal.m4 - ideal.m3) * inv;
 
-  // Build 4 slabs with real room ranges
+  // Build 4 slabs — range uses end=next-start convention (0→1, 1→r60, r60→r80, r80→rooms)
   const SLAB_DEFS = [
     {
       label: 'Slab 1', color: 'var(--grn)',
-      range: `Rooms 0 – ${r1}`,
+      range: `0 → ${r1}`,
       occ: '0 – ' + Math.round(r1/rooms*100) + '%',
       mul: ideal.m1,
       discMul: disc.m1,
@@ -2279,8 +2279,8 @@ function buildJAdvisor() {
     },
     {
       label: 'Slab 2', color: 'var(--gold)',
-      range: `Rooms ${r1+1} – ${r60}`,
-      occ: Math.round((r1+1)/rooms*100) + ' – 60%',
+      range: `${r1} → ${r60}`,
+      occ: Math.round(r1/rooms*100) + ' – 60%',
       mul: ideal.m2,
       discMul: disc.m2,
       totalJump: totalJump2, incRooms: slabRooms2,
@@ -2288,7 +2288,7 @@ function buildJAdvisor() {
     },
     {
       label: 'Slab 3', color: '#F5A623',
-      range: `Rooms ${r60+1} – ${r80}`,
+      range: `${r60} → ${r80}`,
       occ: '60 – 80%',
       mul: ideal.m3,
       discMul: disc.m3,
@@ -2297,7 +2297,7 @@ function buildJAdvisor() {
     },
     {
       label: 'Slab 4', color: 'var(--red)',
-      range: `Rooms ${r80+1} – ${rooms}`,
+      range: `${r80} → ${rooms}`,
       occ: '80 – 100%',
       mul: ideal.m4,
       discMul: disc.m4,
@@ -2323,7 +2323,7 @@ function buildJAdvisor() {
           ${discDiff ? `<div style="font-size:.56rem;color:var(--dim)">→ discount: <span style="color:var(--red);font-family:'DM Mono',monospace">${fmt(effectiveBase * s.discMul)}</span></div>` : ''}
         </div>
         <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--dim);margin-bottom:4px">
-          ${s.range} &nbsp;—&nbsp; Total Increment <span style="color:var(--w)">${fmt(s.totalJump)}</span>${s.totalJump > 0 && s.incRooms > 0 ? ` &nbsp;—&nbsp; per room <span style="color:var(--w)">${fmt(s.totalJump / s.incRooms)}</span>` : ''}
+          Total Increment <span style="color:var(--w)">${fmt(s.totalJump)}</span>${s.totalJump > 0 && s.incRooms > 0 ? ` &nbsp;—&nbsp; per room <span style="color:var(--w)">${fmt(s.totalJump / s.incRooms)}</span>` : ''}
         </div>
         <div style="font-size:.63rem;color:var(--dim);line-height:1.4">${s.desc}</div>
       </div>`;
