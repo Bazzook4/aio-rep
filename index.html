@@ -2856,6 +2856,54 @@ function buildRMSTabHTML() {
       <canvas id="jcurve" style="display:none"></canvas>
     </div>
 
+    <!-- AI Pricing Prompt -->
+    <div class="blk au">
+      <div class="bh blu">🤖 AI Pricing Analysis Prompt</div>
+      <div style="font-size:.7rem;color:var(--dim);line-height:1.55;margin-bottom:10px">
+        Copy this prompt, paste into ChatGPT or Claude, and replace the last line with your hotel's full address.
+      </div>
+      <div style="position:relative">
+        <pre id="aiPromptBox" style="background:var(--s3);border:1px solid var(--bd);border-radius:7px;padding:12px 14px;font-family:'DM Mono',monospace;font-size:.6rem;color:#C0C0C0;line-height:1.7;white-space:pre-wrap;margin:0;overflow:hidden">You are a hotel revenue management expert.
+
+I will give you a hotel location (full address). Based on that, analyze the demand pattern and generate pricing demand scales.
+
+Your output MUST follow this structure strictly:
+
+1. Identify location type (do this internally, do not explain much)
+
+2. Provide WEEKDAY SCALE:
+- Give values for Mon to Sun
+- Range must be between 0.95 to 1.10
+- Keep most values close to 1.00
+- Only push towards 1.05–1.10 if there is strong demand (weekends/events)
+- Only drop towards 0.95–0.98 in weak demand cases
+
+3. Provide MONTHLY SCALE:
+- Jan to Dec values
+- Same rule: mostly around 1.00
+- Slight increase in strong seasons
+- Slight dip in weak seasons (like peak summer if applicable)
+
+4. Add 3 short CONTROL RULES:
+- When to increase pricing
+- When to decrease pricing
+- What drives demand in this location
+
+5. Add 1-line BOTTOM LINE summary
+
+IMPORTANT RULES:
+- Do NOT over exaggerate demand swings
+- Avoid extreme values unless very strong reason
+- Assume this is a budget to mid-scale hotel unless specified
+- Keep answer concise and structured in bullet points
+- No long explanations
+
+Now analyze this location:
+[PASTE YOUR HOTEL ADDRESS HERE]</pre>
+        <button onclick="copyAIPrompt()" style="position:absolute;top:8px;right:8px;background:var(--blu);border:none;border-radius:5px;color:#fff;font-family:'DM Mono',monospace;font-size:.5rem;padding:4px 10px;cursor:pointer;letter-spacing:.5px" id="aiPromptCopyBtn">Copy</button>
+      </div>
+    </div>
+
     <!-- Demand Calendar -->
     <div class="blk au">
       <div class="bh gold">📅 Demand Calendar — India</div>
@@ -2921,6 +2969,15 @@ function showGeo(key) {
     </div>
     <div style="font-size:.68rem;color:var(--dim);line-height:1.6">${g.notes}</div>
   </div>`;
+}
+
+function copyAIPrompt() {
+  const text = document.getElementById('aiPromptBox')?.innerText;
+  if(!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('aiPromptCopyBtn');
+    if(btn) { btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy', 2000); }
+  });
 }
 
 let activeDemand = 'city';
