@@ -2221,8 +2221,19 @@ function buildJAdvisor() {
   const inv       = parseFloat(document.getElementById('jc_inv')?.value)     || 3000;
   const rooms     = parseInt(document.getElementById('jc_rooms')?.value)      || 20;
   const peakPct   = parseFloat(document.getElementById('jc_peakpct')?.value)  || 100;
-  const peak      = inv * (1 + peakPct / 100);
+  const scalePct  = parseFloat(document.getElementById('jc_scale')?.value)    || 100;
   const fmt       = n => '₹' + Math.round(n).toLocaleString('en-IN');
+
+  // Full gap = inv × peakPct/100; scale shrinks how much of that gap is used
+  const fullGap   = inv * (peakPct / 100);
+  const usedGap   = fullGap * (scalePct / 100);
+  const peak      = inv + usedGap;
+
+  // Update scale display
+  const scaleDisp = document.getElementById('jc_scale_disp');
+  const scaleGap  = document.getElementById('jc_scale_gap');
+  if(scaleDisp) scaleDisp.textContent = scalePct + '%';
+  if(scaleGap)  scaleGap.textContent  = fmt(usedGap) + ' gap';
 
   // Update display-only peak field
   const peakDisp = document.getElementById('jc_peak_display');
@@ -2406,21 +2417,17 @@ function buildJAdvisor() {
   if(slabOut) {
     slabOut.innerHTML = SLAB_DEFS.map(s => {
       const discDiff = totalDiscPct > 0 && s.discMul.toFixed(2) !== s.mul.toFixed(2);
-      return `<div style="background:var(--s2);border:1px solid var(--bd);border-left:3px solid ${s.color};border-radius:0 7px 7px 0;padding:9px 12px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap">
-          <div style="font-family:'DM Mono',monospace;font-size:.62rem;font-weight:500;color:${s.color};flex-shrink:0">${s.label}</div>
-          <div style="font-size:.72rem;font-weight:600;color:var(--w);flex:1">${s.range}</div>
-          <div style="font-family:'DM Mono',monospace;font-size:.5rem;color:var(--dim);background:var(--s3);padding:1px 6px;border-radius:3px;flex-shrink:0">${s.occ}</div>
+      const perRoom = s.totalJump > 0 && s.incRooms > 0 ? fmt(Math.round(s.totalJump / s.incRooms)) : null;
+      return `<div style="background:var(--s2);border:1px solid var(--bd);border-left:3px solid ${s.color};border-radius:0 7px 7px 0;padding:7px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="font-family:'DM Mono',monospace;font-size:.6rem;font-weight:600;color:${s.color};flex-shrink:0;min-width:48px">${s.label}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:.68rem;font-weight:600;color:var(--w);flex-shrink:0;min-width:52px">${s.range}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:.78rem;font-weight:700;color:${s.color};flex-shrink:0">${fmt(inv * s.mul)}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:.5rem;color:var(--grn);background:var(--gnd);border:1px solid rgba(50,200,138,.2);padding:1px 5px;border-radius:3px;flex-shrink:0">+${Math.round((s.mul-1)*100)}%</div>
+        <div style="font-family:'DM Mono',monospace;font-size:.5rem;color:var(--dim);background:var(--s3);padding:1px 5px;border-radius:3px;flex-shrink:0">${s.occ}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--dim);flex:1;white-space:nowrap">
+          Incr <span style="color:var(--w)">${fmt(s.totalJump)}</span>${perRoom ? ` · /room <span style="color:var(--w)">${perRoom}</span>` : ''}
         </div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
-          <div style="font-family:'DM Mono',monospace;font-size:.82rem;font-weight:700;color:${s.color}">${fmt(inv * s.mul)}</div>
-          <div style="font-family:'DM Mono',monospace;font-size:.52rem;color:var(--grn);background:var(--gnd);border:1px solid rgba(50,200,138,.2);padding:1px 6px;border-radius:3px">+${Math.round((s.mul-1)*100)}%</div>
-          ${discDiff ? `<div style="font-size:.56rem;color:var(--dim)">→ discount: <span style="color:var(--red);font-family:'DM Mono',monospace">${fmt(effectiveBase * s.discMul)}</span></div>` : ''}
-        </div>
-        <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--dim);margin-bottom:4px">
-          Total Increment <span style="color:var(--w)">${fmt(s.totalJump)}</span>${s.totalJump > 0 && s.incRooms > 0 ? ` &nbsp;—&nbsp; per room <span style="color:var(--w)">${fmt(s.totalJump / s.incRooms)}</span>` : ''}
-        </div>
-        <div style="font-size:.63rem;color:var(--dim);line-height:1.4">${s.desc}</div>
+        ${discDiff ? `<div style="font-size:.55rem;color:var(--dim);flex-shrink:0">disc <span style="color:var(--red);font-family:'DM Mono',monospace">${fmt(effectiveBase * s.discMul)}</span></div>` : ''}
       </div>`;
     }).join('');
   }
@@ -2756,11 +2763,19 @@ function buildRMSTabHTML() {
         </div>
       </div>
 
-      <!-- CURVE MODE -->
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--dim)">Curve Mode</div>
-        <button id="jc_mode_aggressive" class="cs-tab on" onclick="setCurveMode('aggressive')" style="font-size:.58rem;padding:4px 12px">Aggressive J</button>
-        <button id="jc_mode_mild"       class="cs-tab"    onclick="setCurveMode('mild')"       style="font-size:.58rem;padding:4px 12px">Mild J</button>
+      <!-- CURVE MODE + INCREMENT SCALE -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--dim)">Curve</div>
+          <button id="jc_mode_aggressive" class="cs-tab on" onclick="setCurveMode('aggressive')" style="font-size:.58rem;padding:4px 12px">Aggressive J</button>
+          <button id="jc_mode_mild"       class="cs-tab"    onclick="setCurveMode('mild')"       style="font-size:.58rem;padding:4px 12px">Mild J</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:180px">
+          <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--dim);white-space:nowrap">Increment Scale</div>
+          <input type="range" id="jc_scale" min="10" max="100" value="100" step="5" oninput="buildJAdvisor()" style="flex:1;accent-color:var(--gold);cursor:pointer">
+          <div style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--gold);min-width:32px;text-align:right" id="jc_scale_disp">100%</div>
+          <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--dim)" id="jc_scale_gap">—</div>
+        </div>
       </div>
 
       <!-- DISCOUNTS -->
