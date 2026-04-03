@@ -2516,19 +2516,29 @@ function drawJCurveComparison(rooms, inv, effectiveBase, peak, ideal, disc, use5
   (use5Slabs ? ['0%','25%','50%','75%','90%','100%'] : ['0%','25%','50%','75%','100%'])
     .forEach((l,i) => { const xs = use5Slabs ? [0,0.25,0.50,0.75,0.90,1] : [0,0.25,0.50,0.75,1]; ctx.fillText(l, toX(xs[i]), H-6); });
 
-  // Slab breakpoint indicators on ideal curve
+  // Slab breakpoint indicators — ideal (green above) and discounted (red below)
   const bpRooms = use5Slabs ? [r60, r80, r90, rooms] : [r60, r80, rooms];
+  const hasDiscount = discPts[0].y < idealPts[0].y;
   bpRooms.forEach(r => {
-    const pt = idealPts[Math.min(r, idealPts.length-1)];
-    const cx = toX(pt.x), cy = toY(pt.y);
-    // Dot on the line
-    ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI*2);
+    const ipt = idealPts[Math.min(r, idealPts.length-1)];
+    const dpt = discPts[Math.min(r, discPts.length-1)];
+    const ix = toX(ipt.x), iy = toY(ipt.y);
+    const dx = toX(dpt.x), dy = toY(dpt.y);
+    const lx = Math.min(Math.max(ix, pad.l + 24), W - pad.r - 24);
+
+    // Ideal dot + label above
+    ctx.beginPath(); ctx.arc(ix, iy, 3, 0, Math.PI*2);
     ctx.fillStyle = '#32C88A'; ctx.fill();
-    // Rate label above dot
     ctx.fillStyle = '#32C88Acc'; ctx.font = '9px DM Mono,monospace'; ctx.textAlign = 'center';
-    const label = fmt(pt.y);
-    const lx = Math.min(Math.max(cx, pad.l + 20), W - pad.r - 20);
-    ctx.fillText(label, lx, cy - 7);
+    ctx.fillText(fmt(ipt.y), lx, iy - 7);
+
+    // Discounted dot + label below (only if discount applied)
+    if(hasDiscount) {
+      ctx.beginPath(); ctx.arc(dx, dy, 3, 0, Math.PI*2);
+      ctx.fillStyle = '#EF5050'; ctx.fill();
+      ctx.fillStyle = '#EF5050cc'; ctx.font = '9px DM Mono,monospace'; ctx.textAlign = 'center';
+      ctx.fillText(fmt(dpt.y), lx, dy + 14);
+    }
   });
 
   // Y-axis min/max labels
