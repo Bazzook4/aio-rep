@@ -2295,8 +2295,9 @@ function buildJAdvisor() {
     }
   }
 
-  const ideal = slabMuls(inv, peak);
-  const disc  = slabMuls(effectiveBase, peak);
+  const ideal    = slabMuls(inv, peak);
+  const discPeak = peak * discFactor;          // discount applies to peak rate too
+  const disc     = slabMuls(effectiveBase, discPeak);
 
   // Build slab definitions based on mode
   const totalJump2 = (ideal.m2 - ideal.m1) * inv;
@@ -2509,14 +2510,33 @@ function drawJCurveComparison(rooms, inv, effectiveBase, peak, ideal, disc, use5
   ctx.setLineDash([5,3]); ctx.stroke();
   ctx.setLineDash([]);
 
-  // Labels
+  // X-axis labels
   const fmt = n => '₹'+Math.round(n).toLocaleString('en-IN');
   ctx.fillStyle='#636870'; ctx.font=`10px DM Mono,monospace`; ctx.textAlign='center';
   (use5Slabs ? ['0%','25%','50%','75%','90%','100%'] : ['0%','25%','50%','75%','100%'])
-    .forEach((l,i,arr) => { const xs = use5Slabs ? [0,0.25,0.50,0.75,0.90,1] : [0,0.25,0.50,0.75,1]; ctx.fillText(l, toX(xs[i]), H-6); });
+    .forEach((l,i) => { const xs = use5Slabs ? [0,0.25,0.50,0.75,0.90,1] : [0,0.25,0.50,0.75,1]; ctx.fillText(l, toX(xs[i]), H-6); });
+
+  // Slab breakpoint indicators on ideal curve
+  const bpRooms = use5Slabs ? [r60, r80, r90, rooms] : [r60, r80, rooms];
+  bpRooms.forEach(r => {
+    const pt = idealPts[Math.min(r, idealPts.length-1)];
+    const cx = toX(pt.x), cy = toY(pt.y);
+    // Dot on the line
+    ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI*2);
+    ctx.fillStyle = '#32C88A'; ctx.fill();
+    // Rate label above dot
+    ctx.fillStyle = '#32C88Acc'; ctx.font = '9px DM Mono,monospace'; ctx.textAlign = 'center';
+    const label = fmt(pt.y);
+    const lx = Math.min(Math.max(cx, pad.l + 20), W - pad.r - 20);
+    ctx.fillText(label, lx, cy - 7);
+  });
+
+  // Y-axis min/max labels
   ctx.textAlign='right';
-  ctx.fillStyle='#32C88A88'; ctx.fillText(fmt(peak), pad.l-4, toY(peak)+4);
-  ctx.fillStyle='#EF505088'; ctx.fillText(fmt(effectiveBase), pad.l-4, toY(effectiveBase)+4);
+  ctx.fillStyle='#32C88A88'; ctx.font=`10px DM Mono,monospace`;
+  ctx.fillText(fmt(peak), pad.l-4, toY(peak)+4);
+  ctx.fillStyle='#EF505088';
+  ctx.fillText(fmt(effectiveBase), pad.l-4, toY(effectiveBase)+4);
 }
 
 function drawJCurve(rooms, base, m1, m2, m3, m4) {
