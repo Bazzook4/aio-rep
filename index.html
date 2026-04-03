@@ -2243,10 +2243,15 @@ function buildJAdvisor() {
   const ideal = slabMuls(inv, peak);
   const disc  = slabMuls(effectiveBase, peak);
 
-  // Per-room increment within each slab band
-  const inc1 = r60 > 1         ? (ideal.m2 - ideal.m1) * inv / r60           : 0;
-  const inc2 = (r80-r60) > 0   ? (ideal.m3 - ideal.m2) * inv / (r80 - r60)  : 0;
-  const inc3 = (rooms-r80) > 0 ? (ideal.m4 - ideal.m3) * inv / (rooms - r80): 0;
+  // Total rate jump into each slab (from previous slab's rate)
+  // incRooms = rooms in that slab; per-room = totalJump / incRooms
+  const slabRooms1 = r1 + 1;                  // rooms 0..r1
+  const slabRooms2 = r60 - r1;                // rooms r1+1..r60
+  const slabRooms3 = r80 - r60;               // rooms r60+1..r80
+  const slabRooms4 = rooms - r80;             // rooms r80+1..rooms
+  const totalJump2 = (ideal.m2 - ideal.m1) * inv;
+  const totalJump3 = (ideal.m3 - ideal.m2) * inv;
+  const totalJump4 = (ideal.m4 - ideal.m3) * inv;
 
   // Build 4 slabs with real room ranges
   const SLAB_DEFS = [
@@ -2256,7 +2261,7 @@ function buildJAdvisor() {
       occ: '0 – ' + Math.round(r1/rooms*100) + '%',
       mul: ideal.m1,
       discMul: disc.m1,
-      inc: inc1, incRooms: r60,
+      totalJump: 0, incRooms: slabRooms1,
       desc: 'Hotel is empty or just got its first booking. Fill the room — no reason to hold a premium yet.',
     },
     {
@@ -2265,7 +2270,7 @@ function buildJAdvisor() {
       occ: Math.round((r1+1)/rooms*100) + ' – 60%',
       mul: ideal.m2,
       discMul: disc.m2,
-      inc: inc2, incRooms: r80 - r60,
+      totalJump: totalJump2, incRooms: slabRooms2,
       desc: 'Hotel is filling up. Demand is confirmed. Rate begins its climb — guests are competing for fewer rooms.',
     },
     {
@@ -2274,7 +2279,7 @@ function buildJAdvisor() {
       occ: '60 – 80%',
       mul: ideal.m3,
       discMul: disc.m3,
-      inc: inc3, incRooms: rooms - r80,
+      totalJump: totalJump3, incRooms: slabRooms3,
       desc: 'Nearly full. Scarcity is visible. Remaining rooms command a meaningful premium.',
     },
     {
@@ -2283,7 +2288,7 @@ function buildJAdvisor() {
       occ: '80 – 100%',
       mul: ideal.m4,
       discMul: disc.m4,
-      inc: null, incRooms: 0,
+      totalJump: totalJump4, incRooms: slabRooms4,
       desc: 'Sold out zone. Maximum rate. Last rooms should be priced to capture the highest the market will pay.',
     },
   ];
@@ -2305,7 +2310,7 @@ function buildJAdvisor() {
           ${discDiff ? `<div style="font-size:.56rem;color:var(--dim)">→ discount: <span style="color:var(--red);font-family:'DM Mono',monospace">${fmt(effectiveBase * s.discMul)}</span></div>` : ''}
         </div>
         <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--dim);margin-bottom:4px">
-          ${s.range.replace('–','–')} &nbsp;—&nbsp; Total Increment <span style="color:var(--w)">${s.inc !== null ? fmt(s.inc * s.incRooms) : '₹0'}</span>${s.inc !== null && s.incRooms > 0 ? ` &nbsp;—&nbsp; per room <span style="color:var(--w)">${fmt(s.inc)}</span>` : ''}
+          ${s.range} &nbsp;—&nbsp; Total Increment <span style="color:var(--w)">${fmt(s.totalJump)}</span>${s.totalJump > 0 && s.incRooms > 0 ? ` &nbsp;—&nbsp; per room <span style="color:var(--w)">${fmt(s.totalJump / s.incRooms)}</span>` : ''}
         </div>
         <div style="font-size:.63rem;color:var(--dim);line-height:1.4">${s.desc}</div>
       </div>`;
