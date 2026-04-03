@@ -2221,19 +2221,18 @@ function buildJAdvisor() {
   const inv       = parseFloat(document.getElementById('jc_inv')?.value)     || 3000;
   const rooms     = parseInt(document.getElementById('jc_rooms')?.value)      || 20;
   const peakPct   = parseFloat(document.getElementById('jc_peakpct')?.value)  || 100;
-  const scalePct  = parseFloat(document.getElementById('jc_scale')?.value)    || 100;
+  const spreadPct = parseFloat(document.getElementById('jc_scale')?.value) ?? 100;
   const fmt       = n => '₹' + Math.round(n).toLocaleString('en-IN');
 
-  // Full gap = inv × peakPct/100; scale shrinks how much of that gap is used
-  const fullGap   = inv * (peakPct / 100);
-  const usedGap   = fullGap * (scalePct / 100);
-  const peak      = inv + usedGap;
+  // Peak is fixed by user — gap = peak - inv, never changes with the slider
+  const peak    = inv * (1 + peakPct / 100);
+  const fullGap = peak - inv;
 
   // Update scale display
   const scaleDisp = document.getElementById('jc_scale_disp');
   const scaleGap  = document.getElementById('jc_scale_gap');
-  if(scaleDisp) scaleDisp.textContent = scalePct + '%';
-  if(scaleGap)  scaleGap.textContent  = fmt(usedGap) + ' gap';
+  if(scaleDisp) scaleDisp.textContent = spreadPct + '%';
+  if(scaleGap)  scaleGap.textContent  = fmt(fullGap) + ' gap';
 
   // Update display-only peak field
   const peakDisp = document.getElementById('jc_peak_display');
@@ -2304,13 +2303,19 @@ function buildJAdvisor() {
     }
   }
 
-  // Read user weights (slabs 2..5)
-  const userW = Array.from({length: slabCount - 1}, (_,i) => {
+  // Read user weights (slabs 2..N)
+  const rawW = Array.from({length: slabCount - 1}, (_,i) => {
     const v = parseFloat(document.getElementById(`jc_w${i+2}`)?.value);
     return (isNaN(v) || v < 1) ? defaultWeights[i+1] : v;
   });
+
+  // Blend between equal weights (spread=0%) and user weights (spread=100%)
+  // This lets the slider soften or sharpen the distribution without changing the peak
+  const t = spreadPct / 100;
+  const equalW = rawW.map(() => 1);
+  const userW  = rawW.map((w, i) => equalW[i] * (1 - t) + w * t);
+
   const wSum = userW.reduce((a,b) => a+b, 0);
-  // Cumulative fractions of the gap (c[i] = cumulative weight up to slab i+2)
   const cumW = userW.map((_, i) => userW.slice(0, i+1).reduce((a,b)=>a+b,0) / wSum);
 
   // Update the % share display under each weight input
@@ -2791,7 +2796,7 @@ function buildRMSTabHTML() {
             <button id="jc_mode_mild"       class="cs-tab"    onclick="setCurveMode('mild')"       style="font-size:.56rem;padding:3px 10px">Mild J</button>
           </div>
           <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:160px">
-            <div style="font-family:'DM Mono',monospace;font-size:.48rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);white-space:nowrap">Gap Scale</div>
+            <div style="font-family:'DM Mono',monospace;font-size:.48rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);white-space:nowrap">Weight Spread</div>
             <input type="range" id="jc_scale" min="10" max="100" value="100" step="5" oninput="buildJAdvisor()" style="flex:1;accent-color:var(--gold);cursor:pointer">
             <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--gold);min-width:30px;text-align:right" id="jc_scale_disp">100%</div>
             <div style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--dim);min-width:52px" id="jc_scale_gap">—</div>
