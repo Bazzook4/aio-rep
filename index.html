@@ -2232,65 +2232,74 @@ function buildJAdvisor() {
   const effectiveBase = inv * discFactor;
   const totalDiscPct  = Math.round((1 - discFactor) * 100);
 
-  // Slab breakpoints — strictly reducing room count per slab (J-curve scarcity)
-  // ≤40 rooms: 4 slabs   >40 rooms: 5 slabs
-  // Upper slabs split the remaining rooms so each is smaller than the previous:
-  //   4-slab: after 60%, give ~40% of remaining to Slab 3, ~60% to Slab 4
-  //   5-slab: after 60%, give ~40% to Slab 3, ~30% to Slab 4, ~30% to Slab 5
-  //   This guarantees Slab3 rooms < Slab2 rooms, Slab4 < Slab3, etc.
-  const use5Slabs = rooms > 40;
-  const r1  = 1;
-  const r60 = Math.max(2, Math.round(rooms * 0.60));
-  const remUpper = rooms - r60;
+  // ── SLAB COUNT ──────────────────────────────────────────────────────────────
+  // 5 slabs for properties >30 rooms, 4 slabs for ≤30 rooms
+  const use5Slabs = rooms > 30;
 
-  // 4-slab upper split: give ~55% to Slab3, rest to Slab4
-  // If they end up equal, shift 1 room from Slab4 to Slab3
-  let s3rooms4 = Math.max(1, Math.ceil(remUpper * 0.55));
-  let s4rooms4 = remUpper - s3rooms4;
-  if(s3rooms4 === s4rooms4 && s4rooms4 > 1) { s3rooms4 += 1; s4rooms4 -= 1; }
-  const r80_4 = Math.min(rooms - 1, r60 + s3rooms4);
+  // ── INVENTORY DISTRIBUTION ──────────────────────────────────────────────────
+  // Slab 1: always 1 room (first booking, base rate)
+  // Slab 2: biggest chunk of remaining inventory (~55% of rooms-1)
+  // Slab 3 onwards: each slab gets ~55% of what's left — natural taper
+  // If adjacent upper slabs end up equal, shift 1 room to the earlier slab
+  const r1 = 1;
+  const rem1 = rooms - r1;                              // rooms available for slabs 2+
 
-  // 5-slab upper split: Slab3 > Slab4 > Slab5
-  // Same rule: if any two adjacent upper slabs are equal, shift 1 room up
-  let s3rooms5 = Math.max(1, Math.ceil(remUpper * 0.50));
-  let remAfter3 = remUpper - s3rooms5;
-  let s4rooms5  = Math.max(1, Math.ceil(remAfter3 * 0.55));
-  let s5rooms5  = remAfter3 - s4rooms5;
-  if(s3rooms5 === s4rooms5 && s4rooms5 > 1) { s3rooms5 += 1; s4rooms5 -= 1; }
-  if(s4rooms5 === s5rooms5 && s5rooms5 > 1) { s4rooms5 += 1; s5rooms5 -= 1; }
-  const r80_5 = Math.min(rooms - 1, r60 + s3rooms5);
-  const r90_5 = Math.min(rooms - 1, r80_5 + s4rooms5);
+  // Slab 2 end
+  const s2rooms = Math.max(1, Math.round(rem1 * 0.55));
+  const r60     = r1 + s2rooms;                         // end of Slab 2
 
-  const r80 = use5Slabs ? r80_5 : r80_4;
-  const r90 = r90_5; // only used when use5Slabs
+  if(use5Slabs) {
+    // 5-slab: remaining after Slab2 split into 3 reducing chunks
+    const rem2 = rooms - r60;
+    let s3r = Math.max(1, Math.round(rem2 * 0.55));
+    const rem3 = rem2 - s3r;
+    let s4r = Math.max(1, Math.round(rem3 * 0.55));
+    let s5r = rem3 - s4r;
+    if(s3r === s4r && s4r > 1) { s3r++; s4r--; }
+    if(s4r === s5r && s5r > 1) { s4r++; s5r--; }
+    var r80 = Math.min(rooms - 2, r60 + s3r);
+    var r90 = Math.min(rooms - 1, r80 + s4r);
+  } else {
+    // 4-slab: remaining after Slab2 split into 2 chunks
+    const rem2 = rooms - r60;
+    let s3r = Math.max(1, Math.round(rem2 * 0.60));
+    let s4r = rem2 - s3r;
+    if(s3r === s4r && s4r > 1) { s3r++; s4r--; }
+    var r80 = Math.min(rooms - 1, r60 + s3r);
+    var r90 = r80; // unused in 4-slab mode
+  }
 
-  // Derive multipliers — 4 or 5 slabs depending on inventory size
-  // Aggressive: flat early, steep spike near full
-  // Mild:       gentle early rise, clear J bend
+  // ── INCREMENT DISTRIBUTION ───────────────────────────────────────────────────
+  // Total gap = peak - inv (e.g. ₹1000 base, 30% peak → ₹300 gap)
+  // Last slabs get the highest increment; Slab 2 gets the least
+  // Cumulative weights (% of total gap allocated up to that slab):
+  //   4-slab: m2=8%,  m3=22%, m4=100%   → slab increments: 8% / 14% / 78%
+  //   5-slab: m2=5%,  m3=15%, m4=38%,   m5=100% → 5% / 10% / 23% / 62%
+  // Mild mode flattens the early slabs slightly less aggressively
   function slabMuls(base, targetPeak) {
     const peakMul = targetPeak / base;
     const gap = peakMul - 1.0;
     if(use5Slabs) {
       const [w2, w3, w4] = jCurveMode === 'mild'
-        ? [0.12, 0.35, 0.65]
-        : [0.05, 0.18, 0.48];
+        ? [0.08, 0.22, 0.50]
+        : [0.05, 0.15, 0.38];
       return {
         m1: 1.0,
-        m2: +(1.0 + gap * w2).toFixed(2),
-        m3: +(1.0 + gap * w3).toFixed(2),
-        m4: +(1.0 + gap * w4).toFixed(2),
-        m5: +peakMul.toFixed(2),
+        m2: +(1.0 + gap * w2).toFixed(3),
+        m3: +(1.0 + gap * w3).toFixed(3),
+        m4: +(1.0 + gap * w4).toFixed(3),
+        m5: +peakMul.toFixed(3),
       };
     } else {
       const [w2, w3] = jCurveMode === 'mild'
-        ? [0.18, 0.48]
-        : [0.08, 0.32];
+        ? [0.12, 0.32]
+        : [0.08, 0.22];
       return {
         m1: 1.0,
-        m2: +(1.0 + gap * w2).toFixed(2),
-        m3: +(1.0 + gap * w3).toFixed(2),
-        m4: +peakMul.toFixed(2),
-        m5: +peakMul.toFixed(2), // unused in 4-slab mode, kept for chart compat
+        m2: +(1.0 + gap * w2).toFixed(3),
+        m3: +(1.0 + gap * w3).toFixed(3),
+        m4: +peakMul.toFixed(3),
+        m5: +peakMul.toFixed(3), // chart compat
       };
     }
   }
