@@ -2437,26 +2437,28 @@ function buildJAdvisor() {
       </div>` : ''}`;
   }
 
-  drawJCurveComparison(rooms, inv, effectiveBase, peak, ideal, disc, use5Slabs);
+  drawJCurveComparison(rooms, inv, effectiveBase, peak, ideal, disc, use5Slabs, r60, r80, r90);
 }
 
-function jCurvePts(rooms, base, m1, m2, m3, m4, m5) {
+function jCurvePts(rooms, base, m1, m2, m3, m4, m5, r60, r80, r90, use5Slabs) {
+  // Use actual room breakpoints, not hardcoded percentages
   const pts = [];
   for(let i = 0; i <= rooms; i++) {
-    const occ = i / rooms;
     let mul;
-    if(i <= 1)          mul = m1;
-    else if(occ < 0.60) mul = m1 + (m2-m1) * ((occ - 1/rooms) / (0.60 - 1/rooms));
-    else if(occ < 0.80) mul = m2 + (m3-m2) * ((occ - 0.60) / 0.20);
-    else if(occ < 0.90) mul = m3 + (m4-m3) * ((occ - 0.80) / 0.10);
-    else if(occ < 1.00) mul = m4 + (m5-m4) * ((occ - 0.90) / 0.10);
-    else                mul = m5;
+    if(i <= 1)       mul = m1;
+    else if(i < r60) mul = m1 + (m2-m1) * ((i - 1) / (r60 - 1));
+    else if(i < r80) mul = m2 + (m3-m2) * ((i - r60) / (r80 - r60));
+    else if(use5Slabs && i < r90)
+                     mul = m3 + (m4-m3) * ((i - r80) / (r90 - r80));
+    else if(use5Slabs)
+                     mul = m4 + (m5-m4) * ((i - r90) / Math.max(1, rooms - r90));
+    else             mul = m3 + (m4-m3) * ((i - r80) / Math.max(1, rooms - r80));
     pts.push({ x: i/rooms, y: base * mul });
   }
   return pts;
 }
 
-function drawJCurveComparison(rooms, inv, effectiveBase, peak, ideal, disc, use5Slabs) {
+function drawJCurveComparison(rooms, inv, effectiveBase, peak, ideal, disc, use5Slabs, r60, r80, r90) {
   const canvas = document.getElementById('jc_canvas');
   if(!canvas) return;
   const ctx   = canvas.getContext('2d');
@@ -2467,8 +2469,8 @@ function drawJCurveComparison(rooms, inv, effectiveBase, peak, ideal, disc, use5
   const W = canvas.offsetWidth || 500, H = 180;
   ctx.clearRect(0, 0, W, H);
 
-  const idealPts = jCurvePts(rooms, inv,           ideal.m1, ideal.m2, ideal.m3, ideal.m4, ideal.m5);
-  const discPts  = jCurvePts(rooms, effectiveBase, disc.m1,  disc.m2,  disc.m3,  disc.m4, disc.m5);
+  const idealPts = jCurvePts(rooms, inv,           ideal.m1, ideal.m2, ideal.m3, ideal.m4, ideal.m5, r60, r80, r90, use5Slabs);
+  const discPts  = jCurvePts(rooms, effectiveBase, disc.m1,  disc.m2,  disc.m3,  disc.m4, disc.m5,  r60, r80, r90, use5Slabs);
 
   const maxY = peak * 1.05, minY = effectiveBase * 0.90;
   const pad  = {l:58, r:14, t:10, b:28};
