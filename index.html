@@ -195,6 +195,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--w);min-he
 .calc-pre{padding:0 9px;font-family:'DM Mono',monospace;font-size:.78rem;color:var(--dim);border-right:1px solid var(--bd2);height:100%;display:flex;align-items:center;flex-shrink:0}
 .calc-inp{background:none;border:none;color:var(--w);font-family:'DM Mono',monospace;font-size:.9rem;font-weight:500;padding:0 10px;outline:none;width:100%;height:100%}
 .calc-inp::placeholder{color:var(--dim2);font-size:.75rem}
+.calc-inp[type=number]::-webkit-inner-spin-button,.calc-inp[type=number]::-webkit-outer-spin-button{opacity:1;filter:invert(1) brightness(0.6);cursor:pointer}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{opacity:.7}
 .calc-btn{width:100%;background:rgba(91,141,239,.15);border:1px solid rgba(91,141,239,.3);border-radius:5px;color:var(--blu);font-family:'DM Mono',monospace;font-size:.72rem;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;padding:11px;cursor:pointer;transition:all .12s;margin-bottom:10px}
 .calc-btn:hover{background:rgba(91,141,239,.25)}
 .calc-result{display:none;border-top:1px solid var(--bd);padding-top:12px}
@@ -2765,8 +2767,8 @@ function buildRMSTabHTML() {
         Set your inventory rate, discounts, and how high you want to go at full occupancy. The slab ranges are shown as actual room counts — and the chart shows how discounts flatten your J-curve.
       </div>
 
-      <!-- TOP INPUTS: 4 across -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+      <!-- TOP INPUTS: 3 editable + Max Rate display -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;margin-bottom:10px;align-items:end">
         <div class="calc-field">
           <div class="calc-lbl">Inventory Rate (₹)</div>
           <div class="calc-row"><div class="calc-pre">₹</div><input class="calc-inp" id="jc_inv" type="number" value="3000" min="1" oninput="buildJAdvisor()"></div>
@@ -2780,8 +2782,31 @@ function buildRMSTabHTML() {
           <div class="calc-row"><input class="calc-inp" id="jc_peakpct" type="number" value="100" min="10" max="500" step="5" oninput="buildJAdvisor()"><div class="calc-pre" style="border-left:1px solid var(--bd2);border-right:none">%</div></div>
         </div>
         <div class="calc-field">
-          <div class="calc-lbl">Peak Rate (auto)</div>
-          <div class="calc-row" style="background:var(--s3)"><div class="calc-pre">₹</div><div class="calc-inp" id="jc_peak_display" style="display:flex;align-items:center;padding:0 10px;font-family:'DM Mono',monospace;font-size:.9rem;font-weight:500;color:var(--grn)">—</div></div>
+          <div class="calc-lbl" style="color:var(--grn)">Max Rate (auto)</div>
+          <div class="calc-row" style="background:var(--s3);border-color:var(--grn);opacity:.9;min-width:110px;cursor:default">
+            <div class="calc-pre" style="color:var(--grn)">₹</div>
+            <div id="jc_peak_display" style="display:flex;align-items:center;padding:0 10px;font-family:'DM Mono',monospace;font-size:.9rem;font-weight:600;color:var(--grn);pointer-events:none;user-select:none">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DISCOUNTS -->
+      <div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--red)">Discounts Applied</div>
+          <button onclick="addDiscount()" style="background:none;border:1px dashed var(--bd2);border-radius:4px;color:var(--dim);font-family:'DM Mono',monospace;font-size:.5rem;padding:3px 10px;cursor:pointer;letter-spacing:1px">+ Add</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px" id="jc_discounts">
+          <div style="display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center">
+            <input type="text" value="Genius / Platform Discount" placeholder="Discount name"
+              style="background:var(--s1);border:1.5px solid var(--bd2);border-radius:5px;color:var(--w);font-size:.68rem;padding:5px 9px;outline:none;width:100%">
+            <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+              <input type="number" value="10" min="0" max="60" step="1" oninput="buildJAdvisor()"
+                style="width:64px;background:var(--s1);border:1.5px solid var(--bd2);border-radius:5px;color:var(--w);font-family:'DM Mono',monospace;font-size:.82rem;font-weight:500;padding:6px 8px;outline:none;text-align:center">
+              <span style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--dim)">%</span>
+            </div>
+            <button onclick="removeDiscount(this)" style="background:none;border:1px solid var(--bd2);border-radius:4px;color:var(--dim);font-size:.7rem;padding:3px 8px;cursor:pointer">✕</button>
+          </div>
         </div>
       </div>
 
@@ -2809,26 +2834,6 @@ function buildRMSTabHTML() {
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap" id="jc_weight_rows">
           <!-- rendered by buildJAdvisor based on slab count -->
-        </div>
-      </div>
-
-      <!-- DISCOUNTS -->
-      <div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;margin-bottom:10px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--red)">Discounts Applied</div>
-          <button onclick="addDiscount()" style="background:none;border:1px dashed var(--bd2);border-radius:4px;color:var(--dim);font-family:'DM Mono',monospace;font-size:.5rem;padding:3px 10px;cursor:pointer;letter-spacing:1px">+ Add</button>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:5px" id="jc_discounts">
-          <div style="display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center">
-            <input type="text" value="Genius / Platform Discount" placeholder="Discount name"
-              style="background:var(--s1);border:1.5px solid var(--bd2);border-radius:5px;color:var(--w);font-size:.68rem;padding:5px 9px;outline:none;width:100%">
-            <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
-              <input type="number" value="10" min="0" max="60" step="1" oninput="buildJAdvisor()"
-                style="width:64px;background:var(--s1);border:1.5px solid var(--bd2);border-radius:5px;color:var(--w);font-family:'DM Mono',monospace;font-size:.82rem;font-weight:500;padding:6px 8px;outline:none;text-align:center">
-              <span style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--dim)">%</span>
-            </div>
-            <button onclick="removeDiscount(this)" style="background:none;border:1px solid var(--bd2);border-radius:4px;color:var(--dim);font-size:.7rem;padding:3px 8px;cursor:pointer">✕</button>
-          </div>
         </div>
       </div>
 
@@ -2863,7 +2868,7 @@ function buildRMSTabHTML() {
         Copy this prompt, paste into ChatGPT or Claude, and replace the last line with your hotel's full address.
       </div>
       <div style="position:relative">
-        <pre id="aiPromptBox" style="background:var(--s3);border:1px solid var(--bd);border-radius:7px;padding:12px 14px;font-family:'DM Mono',monospace;font-size:.6rem;color:#C0C0C0;line-height:1.7;white-space:pre-wrap;margin:0;overflow:hidden">You are a hotel revenue management expert.
+        <pre id="aiPromptBox" style="background:var(--s3);border:1px solid var(--bd);border-radius:7px;padding:12px 14px;font-family:'DM Mono',monospace;font-size:.6rem;color:#C0C0C0;line-height:1.7;white-space:pre-wrap;margin:0;max-height:160px;overflow-y:auto">You are a hotel revenue management expert.
 
 I will give you a hotel location (full address). Based on that, analyze the demand pattern and generate pricing demand scales.
 
@@ -2892,6 +2897,8 @@ Rules:
 - Keep most values close to 1.00
 - Push higher only for strong demand days (weekends/events)
 - Drop only in weak demand periods
+- Add 1-line logic below:
+  👉 Example: "Weekend leisure demand drives higher pricing"
 
 --------------------------------------------------
 
@@ -2908,13 +2915,25 @@ Rules:
 - Mostly around 1.00
 - Slight increase in peak seasons
 - Slight dip in low seasons
+- Add 1-line logic below:
+  👉 Example: "Summer holidays and festivals increase demand"
 
 --------------------------------------------------
 
-4. HIGH DEMAND DATES (MANDATORY)
+4. HIGH DEMAND DATES (MANDATORY – NEXT 365 DAYS ONLY)
 
-Provide exact dates in this format:
-→ 26 Jan 2026
+Rules:
+- Only include FUTURE dates (next 365 days from today)
+- Format: → 26 Jan 2026
+- No past dates allowed
+
+Structure:
+
+🔥 Super Peak Dates (include scale)
+- [Date] → Event Name → Scale (e.g., 1.30–1.40)
+
+🟡 Strong Demand Dates (include scale)
+- [Date or Date Range] → Occasion → Scale (e.g., 1.10–1.25)
 
 Include:
 - Major festivals
@@ -2922,15 +2941,7 @@ Include:
 - Event-based demand spikes
 - School holiday peaks (if relevant)
 
-Structure:
-
-🔥 Super Peak Dates
-- [Date] → Event Name
-
-🟡 Strong Demand Dates
-- [Date Range] → Occasion
-
-Only include realistic, high-impact dates (no clutter)
+Avoid clutter — only high-impact dates
 
 --------------------------------------------------
 
