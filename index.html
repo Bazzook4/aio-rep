@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -308,6 +309,16 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 @media(max-width:700px){#slabOutput ~ div,#slabOutput{grid-column:1/-1!important}}
 @keyframes up{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 .au{animation:up .2s ease both}
+
+/* ── SHARE TAB ── */
+.share-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;transition:background .1s}
+.share-row:hover{background:var(--s3)}
+.share-pill{font-family:'DM Mono',monospace;font-size:.44rem;border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;flex-shrink:0;color:var(--dim);white-space:nowrap;line-height:1.4}
+.share-title{flex:1;font-size:.72rem;color:var(--w);line-height:1.3}
+.share-copy-btn{background:var(--gold);color:#fff;border:none;border-radius:4px;font-family:'DM Mono',monospace;font-size:.48rem;padding:3px 9px;cursor:pointer;flex-shrink:0;white-space:nowrap;letter-spacing:.3px}
+.share-open-btn{background:none;border:1px solid var(--bd2);border-radius:4px;font-family:'DM Mono',monospace;font-size:.48rem;padding:3px 7px;color:var(--dim);text-decoration:none;flex-shrink:0;white-space:nowrap}
+.share-sec-hdr{display:flex;align-items:center;gap:8px;padding:12px 14px 5px;font-family:'DM Mono',monospace;font-size:.44rem;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}
+.share-sec-count{background:var(--s3);border:1px solid var(--bd);border-radius:3px;padding:1px 6px;font-size:.44rem;color:var(--dim)}
 </style>
 </head>
 <body>
@@ -344,11 +355,6 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     <div class="content-pane" id="pane_rms"></div>
     <div class="content-pane" id="pane_share"></div>
     <div class="content-pane" id="pane_tools"></div>
-    <div class="content-pane" id="pane_videos"></div>
-    <div class="content-pane" id="pane_pricing"></div>
-    <div class="content-pane" id="pane_agreement"></div>
-    <div class="content-pane" id="pane_kb"></div>
-    <div class="content-pane" id="pane_tpl"></div>
   </div>
 </div>
 
@@ -1182,7 +1188,7 @@ TERMS
 
 let pricingCurrency = 'inr';
 
-function buildPricingInner() {
+function buildPricingHTML() {
   const cards = [
     { id:'hotel', label:'Hotel Pricing' },
     { id:'vr',    label:'Vacation Rental Pricing' },
@@ -1192,7 +1198,7 @@ function buildPricingInner() {
   const section = (cur, symbol, label, accent) => `
     <div style="margin-bottom:22px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <div style="font-family:'DM Mono',monospace;font-size:.52rem;letter-spacing:2px;text-transform:uppercase;color:${accent};background:rgba(155,111,47,.08);border:1px solid ${accent}33;border-radius:4px;padding:2px 9px">${symbol} ${label}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:.52rem;letter-spacing:2px;text-transform:uppercase;color:${accent};background:rgba(255,255,255,.05);border:1px solid ${accent}33;border-radius:4px;padding:2px 9px">${symbol} ${label}</div>
         <div style="flex:1;height:1px;background:var(--bd)"></div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
@@ -1220,14 +1226,11 @@ function buildPricingInner() {
       </div>
     </div>`;
 
-  return `
+  return `<div style="padding:14px 18px">
     <div style="font-size:.65rem;color:var(--dim);margin-bottom:16px">Tap <strong style="color:var(--w)">Copy</strong> on any chart \u2192 paste directly in WhatsApp</div>
     ${section('inr','\u20b9','INR \u2014 Indian Rupees','var(--gold)')}
-    ${section('usd','$','USD \u2014 US Dollars','var(--grn)')}`;
-}
-
-function buildPricingHTML() {
-  return `<div style="padding:14px 18px">${buildPricingInner()}</div>`;
+    ${section('usd','$','USD \u2014 US Dollars','var(--grn)')}
+  </div>`;
 }
 
 function copyPricingImg2(id, cur) {
@@ -1339,12 +1342,12 @@ function setPricingCur(cur) {
 }
 
 // ─── AGREEMENT TAB ───
-function buildAgreementInner() {
+function buildAgreementHTML() {
   const docs = [
     { id:'inr', label:'API Partner Agreement — INR', sub:'India — Channel Manager API (₹ Pricing)', accent:'var(--gold)', symbol:'₹' },
     { id:'usd', label:'API Partner Agreement — USD', sub:'Global — Channel Manager API ($ Pricing)', accent:'var(--grn)',  symbol:'$' },
   ];
-  return `
+  return `<div style="padding:14px 18px">
     <div style="font-size:.65rem;color:var(--dim);margin-bottom:16px">Tap <strong style="color:var(--w)">Download</strong> or <strong style="color:var(--w)">View</strong> to open the blank reseller agreement template.</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">
       ${docs.map(d => `
@@ -1368,11 +1371,8 @@ function buildAgreementInner() {
     </div>
     <div style="margin-top:16px;font-size:.62rem;color:var(--dim);line-height:1.6;padding:10px 12px;background:var(--s2);border-radius:7px;border-left:3px solid var(--bd2)">
       These are blank templates. Fill in Company Name, Address, GST, and sign before sending to the reseller partner.
-    </div>`;
-}
-
-function buildAgreementHTML() {
-  return `<div style="padding:14px 18px">${buildAgreementInner()}</div>`;
+    </div>
+  </div>`;
 }
 
 function viewAgreement(id) {
@@ -2087,7 +2087,7 @@ function buildPitchGuide() {
     <div style="font-size:.95rem;flex-shrink:0">💬</div>
     <div style="flex:1;min-width:200px">
       <div style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--blu);margin-bottom:3px">Share with the Hotelier</div>
-      <div style="font-size:.7rem;color:var(--dim);line-height:1.5">"I'd like to share a quick overview — <a href="https://aiosell.com" target="_blank" style="color:var(--gold);text-decoration:none;font-weight:600">aiosell.com</a> · 15-day free trial"</div>
+      <div style="font-size:.7rem;color:#C0C0C0;line-height:1.5">"I'd like to share a quick overview — <a href="https://aiosell.com" target="_blank" style="color:var(--gold);text-decoration:none;font-weight:600">aiosell.com</a> · 15-day free trial"</div>
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap">
       <a href="https://aiosell.com/free-trial/" target="_blank" style="font-family:'DM Mono',monospace;font-size:.5rem;padding:4px 10px;border-radius:4px;background:var(--gd);border:1px solid var(--gb);color:var(--gold);text-decoration:none">Free Trial →</a>
@@ -2186,7 +2186,7 @@ function buildShareMsg() {
     <div style="font-size:1.1rem;flex-shrink:0">💬</div>
     <div style="flex:1">
       <div style="font-family:'DM Mono',monospace;font-size:.52rem;letter-spacing:2px;text-transform:uppercase;color:var(--blu);margin-bottom:5px">Share with the Hotelier</div>
-      <div style="font-size:.73rem;color:var(--dim);line-height:1.6">
+      <div style="font-size:.73rem;color:#C0C0C0;line-height:1.6">
         "I'd like to share a quick overview of what Aiosell can do for your property — 
         <a href="https://aiosell.com" target="_blank" style="color:var(--gold);text-decoration:none;font-weight:600">aiosell.com</a> · 
         15-day free trial, no commitment. Here's also a quick demo of the platform: 
@@ -2614,7 +2614,7 @@ function drawJCurveComparison(rooms, inv, effectiveBase, peak, ideal, disc, use5
   const toY  = y => pad.t + ch - ((y - minY) / (maxY - minY)) * ch;
 
   // Grid
-  ctx.strokeStyle='rgba(0,0,0,.08)'; ctx.lineWidth=1;
+  ctx.strokeStyle='rgba(255,255,255,.05)'; ctx.lineWidth=1;
   (use5Slabs ? [0.25,0.5,0.60,0.75,0.80,0.90,1] : [0.25,0.5,0.60,0.75,0.80,1])
     .forEach(x => { ctx.beginPath();ctx.moveTo(toX(x),pad.t);ctx.lineTo(toX(x),pad.t+ch);ctx.stroke(); });
   [0,0.5,1].forEach(t => {
@@ -2646,7 +2646,7 @@ function drawJCurveComparison(rooms, inv, effectiveBase, peak, ideal, disc, use5
 
   // X-axis labels
   const fmt = n => '₹'+Math.round(n).toLocaleString('en-IN');
-  ctx.fillStyle='#7A7068'; ctx.font=`10px DM Mono,monospace`; ctx.textAlign='center';
+  ctx.fillStyle='#636870'; ctx.font=`10px DM Mono,monospace`; ctx.textAlign='center';
   (use5Slabs ? ['0%','25%','50%','75%','90%','100%'] : ['0%','25%','50%','75%','100%'])
     .forEach((l,i) => { const xs = use5Slabs ? [0,0.25,0.50,0.75,0.90,1] : [0,0.25,0.50,0.75,1]; ctx.fillText(l, toX(xs[i]), H-6); });
 
@@ -2715,7 +2715,7 @@ function drawJCurve(rooms, base, m1, m2, m3, m4) {
   [[0,1/rooms,'rgba(50,200,138,.06)'],[1/rooms,0.60,'rgba(50,200,138,.04)'],[0.60,0.80,'rgba(200,164,74,.06)'],[0.80,1.0,'rgba(239,80,80,.07)']].forEach(([x0,x1,c]) => {
     ctx.fillStyle=c; ctx.fillRect(toX(x0),pad.t,(x1-x0)*cw,ch);
   });
-  ctx.strokeStyle='rgba(0,0,0,.08)'; ctx.lineWidth=1;
+  ctx.strokeStyle='rgba(255,255,255,.05)'; ctx.lineWidth=1;
   [0.25,0.5,0.75,1].forEach(x => { ctx.beginPath();ctx.moveTo(toX(x),pad.t);ctx.lineTo(toX(x),pad.t+ch);ctx.stroke(); });
 
   // Fill
@@ -2733,7 +2733,7 @@ function drawJCurve(rooms, base, m1, m2, m3, m4) {
   ctx.strokeStyle=lg;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.stroke();
 
   // Labels
-  ctx.fillStyle='#7A7068';ctx.font='10px DM Mono,monospace';ctx.textAlign='center';
+  ctx.fillStyle='#636870';ctx.font='10px DM Mono,monospace';ctx.textAlign='center';
   ['0%','25%','50%','75%','100%'].forEach((l,i)=>ctx.fillText(l,toX(i*0.25),H-6));
   ctx.textAlign='right';
   ctx.fillText('₹'+Math.round(base*m1).toLocaleString('en-IN'),pad.l-4,toY(base*m1)+4);
@@ -2951,7 +2951,7 @@ function buildRMSTabHTML() {
         Copy this prompt, paste into ChatGPT or Claude, and replace the last line with your hotel's full address.
       </div>
       <div style="position:relative">
-        <pre id="aiPromptBox" style="background:var(--s3);border:1px solid var(--bd);border-radius:7px;padding:12px 14px;font-family:'DM Mono',monospace;font-size:.6rem;color:var(--dim);line-height:1.7;white-space:pre-wrap;margin:0;max-height:160px;overflow-y:auto">You are a hotel revenue management expert.
+        <pre id="aiPromptBox" style="background:var(--s3);border:1px solid var(--bd);border-radius:7px;padding:12px 14px;font-family:'DM Mono',monospace;font-size:.6rem;color:#C0C0C0;line-height:1.7;white-space:pre-wrap;margin:0;max-height:160px;overflow-y:auto">You are a hotel revenue management expert.
 
 I will give you a hotel location (full address). Based on that, analyze the demand pattern and generate pricing demand scales.
 
@@ -3090,7 +3090,7 @@ function showGeo(key) {
             <div style="font-size:.8rem;font-weight:700;color:var(--w)">${months}</div>
           </div>
           <div style="flex:1;min-width:0">
-            <div style="font-size:.65rem;color:var(--dim);line-height:1.55;margin-bottom:4px">${t.reason}</div>
+            <div style="font-size:.65rem;color:#C0C0C0;line-height:1.55;margin-bottom:4px">${t.reason}</div>
             <div style="font-family:'DM Mono',monospace;font-size:.48rem;color:${t.color};letter-spacing:.5px">${t.action}</div>
           </div>
         </div>`;
@@ -3188,7 +3188,7 @@ function renderDemandCalendar(type) {
     // Build event lines — each event on its own line with inline dates formatted
     const eventLines = m.events.map(e => {
       const clean = e.replace(/⭐+/g,'').trim();
-      return `<div style="font-size:.67rem;color:var(--dim);line-height:1.6">${inlineDates(clean, m.month)}</div>`;
+      return `<div style="font-size:.67rem;color:#C0C0C0;line-height:1.6">${inlineDates(clean, m.month)}</div>`;
     }).join('');
 
     return `<div style="border-left:3px solid ${border};background:${bg};border-radius:0 6px 6px 0;padding:8px 11px;margin-bottom:4px${isToday?';box-shadow:0 0 0 1px rgba(91,141,239,.12)':''}">
@@ -3207,137 +3207,173 @@ function renderDemandCalendar(type) {
 // ═══════════════════════════════════
 // SHARE TAB
 // ═══════════════════════════════════
+
+const SHARE_STAGES = [
+  {
+    id:'sales', label:'Sales', icon:'🎯', desc:'Prospecting & closing',
+    tplCats:  ['followup','general','reseller','techpartner'],
+    kbCats:   ['cm_guide','general','api'],
+    vidKeys:  ['suggested','overview','rms','cm','pms','erp','addons','news'],
+  },
+  {
+    id:'onboard', label:'Onboard', icon:'🚀', desc:'Setup & activation',
+    tplCats:  ['onboarding'],
+    kbCats:   ['cm_ops','be','payments'],
+    vidKeys:  ['cm','pms'],
+  },
+  {
+    id:'support', label:'Support', icon:'🛠', desc:'Troubleshooting & guides',
+    tplCats:  ['support','techpartner'],
+    kbCats:   ['cm_support','pms','pos'],
+    vidKeys:  ['support_cm','support_be'],
+  },
+];
+
 function buildShareHTML() {
-  // Build templates rows (flat list)
-  const tplRows = TPL_CATEGORIES.flatMap(cat =>
-    cat.templates.map(t => {
-      const safeText = t.text.replace(/\\/g,'\\\\').replace(/"/g,'&quot;').replace(/\n/g,'\\n');
-      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:5px;cursor:pointer" data-label="${t.label.replace(/"/g,'&quot;')}" data-cat="${cat.label.replace(/"/g,'&quot;')}" data-text="${safeText}" onclick="shareTPLcopy('${t.id}',this)">
-        <div style="font-family:'DM Mono',monospace;font-size:.46rem;border:1px solid var(--bd);border-radius:3px;padding:2px 6px;flex-shrink:0;color:var(--dim);white-space:nowrap">${cat.label}</div>
-        <div style="flex:1;font-size:.72rem;color:var(--w);line-height:1.3">${t.label}</div>
-        <button id="stplbtn_${t.id}" style="background:var(--gold);color:#fff;border:none;border-radius:4px;font-family:'DM Mono',monospace;font-size:.5rem;padding:3px 9px;cursor:pointer;flex-shrink:0">Copy</button>
-      </div>`;
-    })
-  ).join('');
+  const allVidSects = [...VIDEO_SECTIONS, ...SUPPORT_VIDEO_SECTIONS];
 
-  // Build KB rows (flat list)
-  const kbRows = KB_CATEGORIES.flatMap(cat =>
-    cat.articles.map(a => {
-      const safeTitle = a.title.replace(/"/g,'&quot;');
-      const safeUrl = a.url.replace(/"/g,'&quot;');
-      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:5px" data-label="${safeTitle}" data-cat="${cat.label.replace(/"/g,'&quot;')}">
-        <div style="font-family:'DM Mono',monospace;font-size:.46rem;border:1px solid var(--bd);border-radius:3px;padding:2px 6px;flex-shrink:0;color:var(--dim);white-space:nowrap">${cat.label}</div>
-        <div style="flex:1;font-size:.72rem;color:var(--w);line-height:1.3">${a.title}</div>
-        <div style="display:flex;gap:5px;flex-shrink:0">
-          <button onclick="shareKBcopy(this,'${safeUrl.replace(/'/g,'\\x27')}','${safeTitle.replace(/'/g,'\\x27')}')" style="background:var(--gold);color:#fff;border:none;border-radius:4px;font-family:'DM Mono',monospace;font-size:.5rem;padding:3px 9px;cursor:pointer">Copy</button>
-          <a href="${a.url}" target="_blank" rel="noopener" style="background:none;border:1px solid var(--bd);border-radius:4px;font-family:'DM Mono',monospace;font-size:.5rem;padding:3px 7px;color:var(--dim);text-decoration:none">Open ↗</a>
-        </div>
-      </div>`;
-    })
-  ).join('');
+  function tplRow(cat, t) {
+    const safe = t.text.replace(/\\/g,'\\\\').replace(/"/g,'&quot;').replace(/\n/g,'\\n');
+    return `<div class="share-row" data-label="${t.label.replace(/"/g,'&quot;')}" data-cat="${cat.label}" data-text="${safe}" onclick="shareTPLcopy('${t.id}',this)">
+      <div class="share-pill">${cat.label}</div>
+      <div class="share-title">${t.label}</div>
+      <button id="stplbtn_${t.id}" class="share-copy-btn">Copy</button>
+    </div>`;
+  }
 
-  // Build video rows (flat list, all sections)
-  const allVidSections = [...VIDEO_SECTIONS, ...SUPPORT_VIDEO_SECTIONS];
-  const vidRows = allVidSections.flatMap(s => {
-    const vids = s.filter();
-    return vids.map(v => `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:5px" data-label="${v.title.replace(/"/g,'&quot;')}" data-cat="${s.label.replace(/"/g,'&quot;')}">
-      <div style="font-family:'DM Mono',monospace;font-size:.46rem;border:1px solid var(--bd);border-radius:3px;padding:2px 6px;flex-shrink:0;color:var(--dim);white-space:nowrap">${s.label}</div>
-      <div style="flex:1;font-size:.72rem;color:var(--w);line-height:1.3">${v.title}</div>
-      <a href="https://www.youtube.com/watch?v=${v.id}" target="_blank" rel="noopener" style="background:none;border:1px solid var(--bd);border-radius:4px;font-family:'DM Mono',monospace;font-size:.5rem;padding:3px 7px;color:var(--dim);text-decoration:none;flex-shrink:0">Open ↗</a>
-    </div>`);
+  function kbRow(cat, a) {
+    const st = a.title.replace(/'/g,'\\x27'); const su = a.url.replace(/'/g,'\\x27');
+    return `<div class="share-row" data-label="${a.title.replace(/"/g,'&quot;')}" data-cat="${cat.label}">
+      <div class="share-pill">${cat.label}</div>
+      <div class="share-title">${a.title}</div>
+      <div style="display:flex;gap:5px;flex-shrink:0">
+        <button onclick="event.stopPropagation();shareKBcopy(this,'${su}','${st}')" class="share-copy-btn">Copy</button>
+        <a href="${a.url}" target="_blank" rel="noopener" class="share-open-btn">Open ↗</a>
+      </div>
+    </div>`;
+  }
+
+  function vidRow(sect, v) {
+    const lbl = sect.label.split('—')[0].trim().split('&')[0].trim();
+    return `<div class="share-row" data-label="${v.title.replace(/"/g,'&quot;')}" data-cat="${sect.label}">
+      <div class="share-pill">${lbl}</div>
+      <div class="share-title">${v.title}</div>
+      <a href="https://www.youtube.com/watch?v=${v.id}" target="_blank" rel="noopener" class="share-open-btn">Open ↗</a>
+    </div>`;
+  }
+
+  function secHdr(lbl, n) {
+    return `<div class="share-sec-hdr"><span>${lbl}</span><span class="share-sec-count">${n}</span><span style="flex:1;height:1px;background:var(--bd);display:block"></span></div>`;
+  }
+
+  const panes = SHARE_STAGES.map((stage, si) => {
+    const tplCats = TPL_CATEGORIES.filter(c => stage.tplCats.includes(c.id));
+    const kbCats  = KB_CATEGORIES.filter(c  => stage.kbCats.includes(c.id));
+    const vSects  = allVidSects.filter(s => stage.vidKeys.includes(s.key));
+
+    const tplHTML = tplCats.flatMap(c => c.templates.map(t => tplRow(c,t))).join('');
+    const kbHTML  = kbCats.flatMap(c  => c.articles.map(a  => kbRow(c,a))).join('');
+    const vidHTML = vSects.flatMap(s  => {
+      const vids = s.filter ? s.filter() : VIDEOS.filter(v => v.module === s.key);
+      return vids.map(v => vidRow(s,v));
+    }).join('');
+
+    const tplN = tplCats.reduce((n,c)=>n+c.templates.length,0);
+    const kbN  = kbCats.reduce((n,c)=>n+c.articles.length,0);
+    const vidN = vSects.reduce((n,s)=>n+(s.filter?s.filter():VIDEOS.filter(v=>v.module===s.key)).length,0);
+
+    return `<div id="share_pane_${stage.id}" class="share-stage-pane" style="display:none;padding-bottom:20px">
+      ${tplN ? secHdr('Templates — tap to copy', tplN) + `<div id="stpl_${stage.id}">${tplHTML}</div>` : ''}
+      ${kbN  ? secHdr('Knowledge Base — tap to copy link', kbN) + `<div id="skb_${stage.id}">${kbHTML}</div>` : ''}
+      ${vidN ? secHdr('Videos — tap to open', vidN) + `<div id="svid_${stage.id}">${vidHTML}</div>` : ''}
+    </div>`;
   }).join('');
 
-  const sectionHdr = (label) => `<div style="display:flex;align-items:center;gap:8px;margin:14px 0 6px;padding:0 14px">
-    <div style="font-family:'DM Mono',monospace;font-size:.46rem;letter-spacing:2px;text-transform:uppercase;color:var(--dim)">${label}</div>
-    <div style="flex:1;height:1px;background:var(--bd)"></div>
-  </div>`;
+  const tabs = SHARE_STAGES.map((s,i) => `
+    <button id="sharetab_${s.id}" onclick="switchShareStage('${s.id}')"
+      style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px 8px;background:none;border:none;border-bottom:2px solid ${i===0?'var(--gold)':'transparent'};cursor:pointer;transition:border-color .15s">
+      <span style="font-size:.95rem">${s.icon}</span>
+      <span id="sharetablbl_${s.id}" style="font-family:'DM Mono',monospace;font-size:.56rem;font-weight:600;color:${i===0?'var(--gold)':'var(--dim)'};transition:color .15s">${s.label}</span>
+      <span style="font-size:.58rem;color:var(--dim);line-height:1.2">${s.desc}</span>
+    </button>`).join('');
 
   return `<div>
-    <div style="position:sticky;top:0;z-index:100;background:var(--s1);border-bottom:1px solid var(--bd);padding:10px 14px">
-      <input id="shareSearch" type="text" placeholder="Search templates, articles, videos..."
-        oninput="shareDoSearch(this.value)"
-        style="background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:8px 12px;font-size:.78rem;color:var(--w);outline:none;width:100%;font-family:'DM Sans',sans-serif">
+    <div style="position:sticky;top:0;z-index:100;background:var(--s1);border-bottom:1px solid var(--bd)">
+      <div style="display:flex;border-bottom:1px solid var(--bd)">${tabs}</div>
+      <div style="padding:8px 14px">
+        <input id="shareSearch" type="text" placeholder="Search in this stage..."
+          oninput="shareDoSearch(this.value)"
+          style="background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:7px 12px;font-size:.75rem;color:var(--w);outline:none;width:100%;font-family:'DM Sans',sans-serif">
+      </div>
     </div>
-
-    <div class="share-section">
-      ${sectionHdr('TEMPLATES · tap to copy')}
-      <div id="shareTplList" style="padding:0 4px">${tplRows}</div>
-      <div id="shareTplEmpty" style="display:none;padding:10px 18px;font-size:.72rem;color:var(--dim)">No results</div>
-    </div>
-
-    <div class="share-section">
-      ${sectionHdr('KNOWLEDGE BASE · tap to copy link')}
-      <div id="shareKbList" style="padding:0 4px">${kbRows}</div>
-      <div id="shareKbEmpty" style="display:none;padding:10px 18px;font-size:.72rem;color:var(--dim)">No results</div>
-    </div>
-
-    <div class="share-section">
-      ${sectionHdr('VIDEOS · tap to open')}
-      <div id="shareVidList" style="padding:0 4px">${vidRows}</div>
-      <div id="shareVidEmpty" style="display:none;padding:10px 18px;font-size:.72rem;color:var(--dim)">No results</div>
-    </div>
+    <div id="shareStageWrap">${panes}</div>
   </div>`;
+}
+
+let _shareStage = 'sales';
+
+function switchShareStage(id) {
+  _shareStage = id;
+  SHARE_STAGES.forEach(s => {
+    const pane = document.getElementById('share_pane_'+s.id);
+    const tab  = document.getElementById('sharetab_'+s.id);
+    const lbl  = document.getElementById('sharetablbl_'+s.id);
+    if(pane) pane.style.display = s.id===id ? '' : 'none';
+    if(tab)  tab.style.borderBottomColor = s.id===id ? 'var(--gold)' : 'transparent';
+    if(lbl)  lbl.style.color = s.id===id ? 'var(--gold)' : 'var(--dim)';
+  });
+  const inp = document.getElementById('shareSearch');
+  if(inp) { inp.value = ''; shareDoSearch(''); }
 }
 
 function shareTPLcopy(id, rowEl) {
-  const raw = rowEl.dataset.text;
-  const text = raw.replace(/\\n/g,'\n');
-  const btn = document.getElementById('stplbtn_'+id);
-  const flash = () => {
+  const text = rowEl.dataset.text.replace(/\\n/g,'\n');
+  const btn  = document.getElementById('stplbtn_'+id);
+  navigator.clipboard.writeText(text).then(()=>{
     if(!btn) return;
-    const orig = btn.textContent;
-    btn.textContent = 'Copied \u2713'; btn.style.background = 'var(--grn)';
-    setTimeout(()=>{ btn.textContent = orig; btn.style.background = 'var(--gold)'; }, 1800);
-  };
-  navigator.clipboard ? navigator.clipboard.writeText(text).then(flash) : (()=>{
-    const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);flash();
-  })();
+    btn.textContent='Copied ✓'; btn.style.background='var(--grn)';
+    setTimeout(()=>{ btn.textContent='Copy'; btn.style.background='var(--gold)'; },1800);
+  });
 }
 
 function shareKBcopy(btn, url, title) {
-  const text = title + '\n' + url;
-  const flash = () => {
-    const orig = btn.textContent;
-    btn.textContent = 'Copied \u2713'; btn.style.background = 'var(--grn)';
-    setTimeout(()=>{ btn.textContent = orig; btn.style.background = 'var(--gold)'; }, 1800);
-  };
-  navigator.clipboard ? navigator.clipboard.writeText(text).then(flash) : (()=>{
-    const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);flash();
-  })();
+  navigator.clipboard.writeText(title+'\n'+url).then(()=>{
+    const orig=btn.textContent;
+    btn.textContent='Copied ✓'; btn.style.background='var(--grn)';
+    setTimeout(()=>{ btn.textContent=orig; btn.style.background='var(--gold)'; },1800);
+  });
 }
 
 function shareDoSearch(q) {
   const term = q.toLowerCase().trim();
-  ['Tpl','Kb','Vid'].forEach(type => {
-    const list = document.getElementById('share'+type+'List');
-    const empty = document.getElementById('share'+type+'Empty');
+  const stage = _shareStage;
+  ['tpl','kb','vid'].forEach(type => {
+    const list = document.getElementById('s'+type+'_'+stage);
     if(!list) return;
-    let anyVisible = false;
-    list.querySelectorAll('[data-label]').forEach(row => {
-      const label = (row.dataset.label||'').toLowerCase();
-      const cat   = (row.dataset.cat||'').toLowerCase();
-      const text  = (row.dataset.text||'').toLowerCase();
-      const show  = !term || label.includes(term) || cat.includes(term) || text.includes(term);
-      row.style.display = show ? '' : 'none';
-      if(show) anyVisible = true;
+    let any = false;
+    list.querySelectorAll('.share-row').forEach(row => {
+      const match = !term
+        || (row.dataset.label||'').toLowerCase().includes(term)
+        || (row.dataset.cat||'').toLowerCase().includes(term)
+        || (row.dataset.text||'').toLowerCase().includes(term);
+      row.style.display = match ? '' : 'none';
+      if(match) any = true;
     });
-    if(empty) empty.style.display = anyVisible ? 'none' : '';
   });
 }
 
 // ═══════════════════════════════════
 // TOOLS TAB
 // ═══════════════════════════════════
+
 function buildToolsHTML() {
+  const secHdr = (lbl) => `<div style="font-family:'DM Mono',monospace;font-size:.48rem;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:10px;display:flex;align-items:center;gap:8px">${lbl}<span style="flex:1;height:1px;background:var(--bd);display:block"></span></div>`;
   return `<div style="padding:14px 18px">
-    <div style="font-family:'DM Mono',monospace;font-size:.48rem;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:10px;display:flex;align-items:center;gap:8px">
-      Pricing Charts <span style="flex:1;height:1px;background:var(--bd);display:block"></span>
-    </div>
-    ${buildPricingInner()}
-    <div style="font-family:'DM Mono',monospace;font-size:.48rem;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin:18px 0 10px;display:flex;align-items:center;gap:8px">
-      Reseller Agreements <span style="flex:1;height:1px;background:var(--bd);display:block"></span>
-    </div>
-    ${buildAgreementInner()}
+    ${secHdr('Pricing Charts')}
+    ${buildPricingHTML()}
+    <div style="margin-top:4px"></div>
+    ${secHdr('Reseller Agreements')}
+    ${buildAgreementHTML()}
   </div>`;
 }
 
@@ -3348,7 +3384,7 @@ const MODE_LABELS = {
   pitch: '▶ Pitch Guide',
   share: '⬆ Share Resources',
   tools: '◈ Tools',
-  rms: '⚡ RMS Setup',
+  rms:   '⚡ RMS Setup',
 };
 
 function setNavActive(mode) {
@@ -3383,24 +3419,14 @@ function openMode(mode) {
     setTimeout(()=>{ buildJAdvisor(); buildSlabs(); }, 60);
   } else if(mode === 'share' && !pane.innerHTML.trim()) {
     pane.innerHTML = buildShareHTML();
+    setTimeout(()=> switchShareStage('sales'), 0);
   } else if(mode === 'tools' && !pane.innerHTML.trim()) {
     pane.innerHTML = buildToolsHTML();
-    setTimeout(() => setPricingAllImages(), 0);
-  } else if(mode === 'videos' && !pane.innerHTML.trim()) {
-    pane.innerHTML = buildVideosHTML();
-  } else if(mode === 'pricing' && !pane.innerHTML.trim()) {
-    pane.innerHTML = buildPricingHTML();
-    setTimeout(() => setPricingAllImages(), 0);
-  } else if(mode === 'agreement' && !pane.innerHTML.trim()) {
-    pane.innerHTML = buildAgreementHTML();
-  } else if(mode === 'kb' && !pane.innerHTML.trim()) {
-    pane.innerHTML = buildKBHTML();
-  } else if(mode === 'tpl' && !pane.innerHTML.trim()) {
-    pane.innerHTML = buildTPLHTML();
+    setTimeout(()=> setPricingAllImages(), 0);
   }
 }
 
-// Auto-open Pitch on load
+// Auto-open on load
 openMode('pitch');
 </script>
 </body>
