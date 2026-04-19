@@ -210,6 +210,13 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .calc-note{font-size:.67rem;color:#A0A0A0;line-height:1.55;padding:8px 10px;background:rgba(91,141,239,.05);border-radius:5px;border-left:2px solid rgba(91,141,239,.4)}
 #c_occ_slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--gold);cursor:pointer;border:2px solid var(--bg)}
 #c_occ_slider::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--gold);cursor:pointer;border:2px solid var(--bg)}
+.calc-step{display:flex;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:9px 12px}
+.calc-step-num{width:22px;height:22px;border-radius:4px;background:rgba(91,141,239,.12);color:var(--blu);font-family:'DM Mono',monospace;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.calc-step-body{flex:1;min-width:0}
+.calc-step-title{font-size:.72rem;font-weight:600;color:var(--w);line-height:1.3}
+.calc-step-sub{font-size:.62rem;color:var(--dim);margin-top:2px}
+.calc-step-val{font-family:'DM Mono',monospace;font-size:1rem;font-weight:600;flex-shrink:0;text-align:right}
+.calc-step-unit{font-size:.58rem;color:var(--dim);flex-shrink:0;text-align:right;max-width:80px;line-height:1.3}
 
 /* ── RESELLER ── */
 .rs-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px}
@@ -599,177 +606,198 @@ function buildRMSHTML() {
 // ─── CALCULATOR HTML ───
 function buildCalcHTML() {
   return `<div class="blk au">
-    <div class="bh blu">Revenue Uplift Calculator</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start">
+    <div class="bh blu">OTA Cost &amp; Savings Calculator</div>
 
-      <!-- LEFT: Inputs -->
-      <div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:12px">
-        <div style="font-family:'DM Mono',monospace;font-size:.48rem;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:10px">Enter Hotel Details</div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <div class="calc-field">
-            <div class="calc-lbl">Total Rooms</div>
-            <div class="calc-row"><input class="calc-inp" id="c_rooms" type="number" placeholder="e.g. 30" min="1" oninput="liveCalc()"></div>
-          </div>
-          <div class="calc-field">
-            <div class="calc-lbl">ADR per Night (₹)</div>
-            <div class="calc-row"><div class="calc-pre">₹</div><input class="calc-inp" id="c_adr" type="number" placeholder="e.g. 2500" min="1" oninput="liveCalc()"></div>
-          </div>
-          <div class="calc-field">
-            <div class="calc-lbl">Current Occupancy</div>
-            <div style="display:flex;align-items:center;gap:8px;margin-top:2px">
-              <input type="range" id="c_occ_slider" min="10" max="100" value="60"
-                style="-webkit-appearance:none;appearance:none;flex:1;height:3px;background:var(--bd2);border-radius:3px;outline:none;cursor:pointer;accent-color:var(--gold)"
-                oninput="document.getElementById('c_occ').value=this.value;liveCalc()">
-              <div style="display:flex;align-items:center;background:var(--s1);border:1.5px solid var(--bd2);border-radius:5px;overflow:hidden;height:34px;width:72px;flex-shrink:0">
-                <input class="calc-inp" id="c_occ" type="number" value="60" min="10" max="100"
-                  style="width:100%;font-size:.82rem" oninput="document.getElementById('c_occ_slider').value=this.value;liveCalc()">
-                <div class="calc-pre" style="border-right:none;border-left:1px solid var(--bd2);font-size:.72rem">%</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div style="margin-top:10px;font-size:.58rem;color:var(--dim);line-height:1.5;border-top:1px solid var(--bd);padding-top:8px">
-          Assumes <strong style="color:var(--w)">65%</strong> online bookings · Aiosell fee <strong style="color:var(--gold)">3.5%</strong> of online revenue
-        </div>
+    <!-- INPUTS ROW -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+      <div class="calc-field">
+        <div class="calc-lbl">Total Rooms</div>
+        <div class="calc-row"><input class="calc-inp" id="c_rooms" type="number" placeholder="e.g. 30" min="1" oninput="liveCalc()"></div>
       </div>
-
-      <!-- RIGHT: Key outputs -->
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-          <div class="cr-box"><div class="cr-val gold" id="cr_current">—</div><div class="cr-lbl">Monthly Revenue</div></div>
-          <div class="cr-box"><div class="cr-val blu" id="cr_online">—</div><div class="cr-lbl">Online Revenue</div></div>
-          <div class="cr-box"><div class="cr-val red" id="cr_otacomm">—</div><div class="cr-lbl">OTA Commission</div></div>
-          <div class="cr-box"><div class="cr-val gold" id="cr_fee">—</div><div class="cr-lbl">Aiosell Fee</div></div>
-          <div class="cr-box highlight"><div class="cr-val grn" id="cr_up15">—</div><div class="cr-lbl">Uplift @ 15%</div></div>
-          <div class="cr-box highlight"><div class="cr-val grn" id="cr_net">—</div><div class="cr-lbl">Net Gain</div></div>
-        </div>
-        <div style="background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:8px 10px">
-          <div style="font-family:'DM Mono',monospace;font-size:.44rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:6px">If 10% OTA → Direct</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px">
-            <div class="cr-box" style="padding:5px 6px"><div class="cr-val red" style="font-size:.7rem" id="cr_ota10">—</div><div class="cr-lbl">OTA cost</div></div>
-            <div class="cr-box" style="padding:5px 6px"><div class="cr-val grn" style="font-size:.7rem" id="cr_direct10">—</div><div class="cr-lbl">Direct cost</div></div>
-            <div class="cr-box highlight" style="padding:5px 6px"><div class="cr-val grn" style="font-size:.7rem" id="cr_saving10">—</div><div class="cr-lbl">Saving</div></div>
+      <div class="calc-field">
+        <div class="calc-lbl">ADR per Night (&#8377;)</div>
+        <div class="calc-row"><div class="calc-pre">&#8377;</div><input class="calc-inp" id="c_adr" type="number" placeholder="e.g. 2500" min="1" oninput="liveCalc()"></div>
+      </div>
+      <div class="calc-field">
+        <div class="calc-lbl">Last 3-Month Avg Occupancy</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <input type="range" id="c_occ_slider" min="10" max="100" value="60"
+            style="-webkit-appearance:none;appearance:none;flex:1;height:3px;background:var(--bd2);border-radius:3px;outline:none;cursor:pointer;accent-color:var(--gold)"
+            oninput="document.getElementById('c_occ').value=this.value;liveCalc()">
+          <div style="display:flex;align-items:center;background:var(--s1);border:1.5px solid var(--bd2);border-radius:5px;overflow:hidden;height:34px;width:70px;flex-shrink:0">
+            <input class="calc-inp" id="c_occ" type="number" value="60" min="10" max="100"
+              style="width:100%;font-size:.82rem" oninput="document.getElementById('c_occ_slider').value=this.value;liveCalc()">
+            <div class="calc-pre" style="border-right:none;border-left:1px solid var(--bd2);font-size:.72rem">%</div>
           </div>
         </div>
-        <div style="background:linear-gradient(135deg,rgba(239,80,80,.07),rgba(200,164,74,.05));border:1px solid rgba(239,80,80,.2);border-radius:6px;padding:8px 10px;font-size:.65rem;color:#CCC;line-height:1.5;min-height:36px" id="calcInsight"></div>
       </div>
     </div>
 
-    <!-- Uplift breakdown — full width below -->
-    <div style="margin-top:10px" id="upliftBreakdown"></div>
+    <!-- STEPS — shown once inputs filled -->
+    <div id="calcSteps" style="display:none;flex-direction:column;gap:6px">
+
+      <!-- Step 1 -->
+      <div class="calc-step">
+        <div class="calc-step-num">1</div>
+        <div class="calc-step-body">
+          <div class="calc-step-title">Total Room Nights to Sell per Month</div>
+          <div class="calc-step-sub" id="s1_sub">Rooms &times; 30 days = available inventory</div>
+        </div>
+        <div class="calc-step-val gold" id="s1_rn">&#8212;</div>
+        <div class="calc-step-unit">room nights</div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="calc-step">
+        <div class="calc-step-num">2</div>
+        <div class="calc-step-body">
+          <div class="calc-step-title">Room Nights Actually Sold</div>
+          <div class="calc-step-sub" id="s2_sub">at average occupancy</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;gap:1px">
+          <div class="calc-step-val blu" id="s2_sold">&#8212;</div>
+          <div style="font-size:.58rem;color:var(--dim)">room nights</div>
+          <div style="font-family:'DM Mono',monospace;font-size:.75rem;font-weight:600;color:var(--gold)" id="s2_rev">&#8212;</div>
+          <div style="font-size:.58rem;color:var(--dim)">monthly revenue</div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="calc-step" style="border-color:rgba(239,80,80,.3);flex-wrap:wrap;gap:8px">
+        <div class="calc-step-num" style="background:rgba(239,80,80,.15);color:var(--red)">3</div>
+        <div class="calc-step-body" style="min-width:160px">
+          <div class="calc-step-title">OTA Commission Being Paid</div>
+          <div style="display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:wrap">
+            <span style="font-size:.62rem;color:var(--dim)">OTA share:</span>
+            <div style="display:flex;align-items:center;background:var(--s1);border:1px solid var(--bd2);border-radius:4px;overflow:hidden;height:26px;width:64px">
+              <input class="calc-inp" id="c_ota_pct" type="number" value="60" min="1" max="100" style="font-size:.78rem" oninput="liveCalc()">
+              <div style="padding:0 5px;font-size:.68rem;color:var(--dim);border-left:1px solid var(--bd2);height:100%;display:flex;align-items:center">%</div>
+            </div>
+            <span style="font-size:.62rem;color:var(--dim)">Comm rate:</span>
+            <div style="display:flex;align-items:center;background:var(--s1);border:1px solid var(--bd2);border-radius:4px;overflow:hidden;height:26px;width:64px">
+              <input class="calc-inp" id="c_ota_comm" type="number" value="20" min="1" max="40" style="font-size:.78rem" oninput="liveCalc()">
+              <div style="padding:0 5px;font-size:.68rem;color:var(--dim);border-left:1px solid var(--bd2);height:100%;display:flex;align-items:center">%</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;gap:1px">
+          <div class="calc-step-val red" id="s3_comm">&#8212;</div>
+          <div style="font-size:.58rem;color:var(--dim)">OTA commission/mo</div>
+          <div style="font-size:.62rem;color:var(--dim);margin-top:2px" id="s3_rn_note"></div>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="calc-step" style="border-color:rgba(50,200,138,.3);flex-wrap:wrap;gap:8px">
+        <div class="calc-step-num" style="background:rgba(50,200,138,.1);color:var(--grn)">4</div>
+        <div class="calc-step-body" style="min-width:160px">
+          <div class="calc-step-title">Shift OTA &#8594; Direct Booking Engine</div>
+          <div style="display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:wrap">
+            <span style="font-size:.62rem;color:var(--dim)">Shift:</span>
+            <div style="display:flex;align-items:center;background:var(--s1);border:1px solid var(--bd2);border-radius:4px;overflow:hidden;height:26px;width:64px">
+              <input class="calc-inp" id="c_shift_lo" type="number" value="5" min="1" max="50" style="font-size:.78rem" oninput="liveCalc()">
+              <div style="padding:0 5px;font-size:.68rem;color:var(--dim);border-left:1px solid var(--bd2);height:100%;display:flex;align-items:center">%</div>
+            </div>
+            <span style="font-size:.62rem;color:var(--dim)">to</span>
+            <div style="display:flex;align-items:center;background:var(--s1);border:1px solid var(--bd2);border-radius:4px;overflow:hidden;height:26px;width:64px">
+              <input class="calc-inp" id="c_shift_hi" type="number" value="10" min="1" max="50" style="font-size:.78rem" oninput="liveCalc()">
+              <div style="padding:0 5px;font-size:.68rem;color:var(--dim);border-left:1px solid var(--bd2);height:100%;display:flex;align-items:center">%</div>
+            </div>
+            <span style="font-size:.62rem;color:var(--dim)">of OTA · 2% service fee instead</span>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;gap:1px">
+          <div style="font-size:.58rem;color:var(--dim);text-align:right">saving range</div>
+          <div style="font-family:'DM Mono',monospace;font-size:.9rem;font-weight:600;color:var(--grn);text-align:right" id="s4_save">&#8212;</div>
+          <div style="font-size:.58rem;color:var(--dim)">per month</div>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="calc-step" style="border-color:rgba(200,164,74,.35);background:rgba(200,164,74,.04)">
+        <div class="calc-step-num" style="background:var(--gd);color:var(--gold)">5</div>
+        <div class="calc-step-body">
+          <div class="calc-step-title">Aiosell Fee</div>
+          <div class="calc-step-sub" id="s5_sub">3.5% of total monthly revenue</div>
+        </div>
+        <div class="calc-step-val gold" id="s5_fee">&#8212;</div>
+        <div class="calc-step-unit">per month</div>
+      </div>
+
+      <!-- Net verdict -->
+      <div id="calcVerdict" style="border-radius:8px;padding:11px 14px;font-size:.69rem;line-height:1.6;color:#CCC;border:1px solid rgba(50,200,138,.25);background:linear-gradient(135deg,rgba(50,200,138,.07),rgba(50,200,138,.02))"></div>
+
+    </div>
+
     <div class="calc-note" style="margin-top:8px" id="calcNote">Enter rooms and ADR to see the numbers.</div>
   </div>`;
 }
 
 function liveCalc() {
-  const rooms = parseFloat(document.getElementById('c_rooms')?.value);
-  const adr   = parseFloat(document.getElementById('c_adr')?.value);
-  const occ   = parseFloat(document.getElementById('c_occ')?.value) || 60;
-  const fmt   = n => '₹' + Math.round(n).toLocaleString('en-IN');
+  const rooms    = parseFloat(document.getElementById('c_rooms')?.value);
+  const adr      = parseFloat(document.getElementById('c_adr')?.value);
+  const occ      = parseFloat(document.getElementById('c_occ')?.value)      || 60;
+  const otaPct   = parseFloat(document.getElementById('c_ota_pct')?.value)  || 60;
+  const otaComm  = parseFloat(document.getElementById('c_ota_comm')?.value) || 20;
+  const shiftLo  = parseFloat(document.getElementById('c_shift_lo')?.value) || 5;
+  const shiftHi  = parseFloat(document.getElementById('c_shift_hi')?.value) || 10;
+  const fmt      = n => '₹' + Math.round(n).toLocaleString('en-IN');
+  const fmtN     = n => Math.round(n).toLocaleString('en-IN');
 
-  const blank = ['cr_current','cr_online','cr_fee','cr_otacomm','cr_up15','cr_net','cr_ota10','cr_direct10','cr_saving10'];
+  const stepsEl  = document.getElementById('calcSteps');
+  const noteEl   = document.getElementById('calcNote');
 
-  if(!rooms || !adr) {
-    document.getElementById('calcNote').innerHTML    = 'Enter rooms and ADR to see the numbers.';
-    document.getElementById('calcInsight').innerHTML = '';
-    blank.forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent='—'; });
+  if (!rooms || !adr) {
+    if (stepsEl) stepsEl.style.display = 'none';
+    noteEl.innerHTML = 'Enter rooms and ADR to see the numbers.';
     return;
   }
+  if (stepsEl) stepsEl.style.display = 'flex';
 
-  const monthly   = rooms * adr * (occ/100) * 30;  // total monthly revenue
-  const online    = monthly * 0.65;                  // 65% from online channels
-  const fee       = online * 0.035;                  // Aiosell fee = 3.5% of online
-  const otaComm   = online * 0.20;                   // OTA commission on all online bookings
-  const up15      = monthly * 0.15;                  // 15% revenue uplift
-  const net       = up15 - fee;                      // net gain
+  // ── Step 1: Inventory ──
+  const totalRN = rooms * 30;
+  document.getElementById('s1_rn').textContent  = fmtN(totalRN);
+  document.getElementById('s1_sub').textContent = rooms + ' rooms × 30 days';
 
-  // 10% of online bookings shift to direct
-  const shift10rev   = online * 0.10;               // revenue value of that 10%
-  const ota10cost    = shift10rev * 0.20;            // what they currently pay OTA on that 10%
-  const direct10cost = shift10rev * 0.02;            // what they'd pay via payment gateway (2%)
-  const saving10     = ota10cost - direct10cost;     // net saving from that shift alone
+  // ── Step 2: Sold room nights ──
+  const soldRN  = rooms * (occ / 100) * 30;
+  const monthly = soldRN * adr;
+  document.getElementById('s2_sold').textContent = fmtN(soldRN);
+  document.getElementById('s2_sub').textContent  = rooms + ' rooms × ' + occ + '% occ × 30 days';
+  document.getElementById('s2_rev').textContent  = fmt(monthly) + '/mo';
 
-  // Populate main grid
-  document.getElementById('cr_current').textContent = fmt(monthly) + '/mo';
-  document.getElementById('cr_online').textContent  = fmt(online)  + '/mo';
-  document.getElementById('cr_fee').textContent     = fmt(fee)     + '/mo';
-  document.getElementById('cr_otacomm').textContent = fmt(otaComm) + '/mo';
-  document.getElementById('cr_up15').textContent    = '+' + fmt(up15) + '/mo';
-  document.getElementById('cr_net').textContent     = (net>=0?'+':'') + fmt(net) + '/mo';
-  document.getElementById('cr_net').className       = 'cr-val ' + (net>=0 ? 'grn' : 'red');
+  // ── Step 3: OTA commission ──
+  const otaRN      = soldRN * (otaPct / 100);
+  const otaRevenue = otaRN * adr;
+  const otaCommAmt = otaRevenue * (otaComm / 100);
+  document.getElementById('s3_comm').textContent   = fmt(otaCommAmt) + '/mo';
+  document.getElementById('s3_rn_note').textContent = fmtN(otaRN) + ' OTA room nights × ₹' + Math.round(adr).toLocaleString('en-IN') + ' ADR × ' + otaComm + '%';
 
-  // Populate OTA→Direct grid
-  document.getElementById('cr_ota10').textContent     = fmt(ota10cost)  + '/mo';
-  document.getElementById('cr_direct10').textContent  = fmt(direct10cost) + '/mo';
-  document.getElementById('cr_saving10').textContent  = '+' + fmt(saving10) + '/mo';
+  // ── Step 4: Shift savings ──
+  const shiftLoRev = otaRN * (shiftLo / 100) * adr;
+  const shiftHiRev = otaRN * (shiftHi / 100) * adr;
+  const savingLo   = shiftLoRev * ((otaComm / 100) - 0.02);
+  const savingHi   = shiftHiRev * ((otaComm / 100) - 0.02);
+  document.getElementById('s4_save').textContent = fmt(savingLo) + ' – ' + fmt(savingHi);
 
-  // The key insight — the real conversation closer
-  document.getElementById('calcInsight').innerHTML =
-    `<strong style="color:var(--w)">The hidden cost of "cheap" software:</strong> Without a direct booking engine, 
-    this hotel pays <strong style="color:var(--red)">${fmt(ota10cost)}/month</strong> in OTA commission on just 10% of its bookings. 
-    Shift that 10% to direct and they pay only <strong style="color:var(--grn)">${fmt(direct10cost)}/month</strong> in payment gateway fees — 
-    saving <strong style="color:var(--grn)">${fmt(saving10)}/month</strong> on that shift alone. 
-    That saving alone is <strong style="color:var(--w)">${Math.round(saving10/fee*100)}% of the Aiosell fee</strong> — before any revenue uplift is counted.`;
+  // ── Step 5: Aiosell fee ──
+  const aiosellFee = monthly * 0.035;
+  document.getElementById('s5_fee').textContent = fmt(aiosellFee) + '/mo';
+  document.getElementById('s5_sub').textContent = '3.5% × ' + fmt(monthly) + ' monthly revenue';
 
-  // How the 15% uplift happens — broken into real components
-  const extraRoomNights = Math.round(rooms * (occ/100) * 30 * 0.05); // 5% more room nights
-  const extraRNrev      = extraRoomNights * adr;
-  const highDemandGain  = monthly * 0.04;   // 4% from peak pricing — charging more when demand is high
-  const weeklyGain      = monthly * 0.03;   // 3% from smarter weekday/weekend splits
-  const dataGain        = monthly * 0.03;   // 3% from consolidated data → better decisions
-  const totalComponents = extraRNrev + highDemandGain + weeklyGain + dataGain;
+  // ── Verdict ──
+  const savingMid  = (savingLo + savingHi) / 2;
+  const pctCovered = Math.round(savingMid / aiosellFee * 100);
+  document.getElementById('calcVerdict').innerHTML =
+    `<strong style="color:var(--w)">The bottom line:</strong> By shifting just ${shiftLo}–${shiftHi}% of OTA bookings to the direct Booking Engine,
+    this hotel saves <strong style="color:var(--grn)">${fmt(savingLo)} – ${fmt(savingHi)}/mo</strong> in commission alone —
+    covering <strong style="color:var(--gold)">${pctCovered}% of the Aiosell fee</strong>.
+    That's before any revenue uplift from dynamic pricing is counted.`;
 
-  const upliftRows = [
-    {
-      icon: '🛏️',
-      label: 'Extra room nights sold',
-      value: fmt(extraRNrev) + '/mo',
-      pct: '~5% uplift',
-      color: 'var(--grn)',
-      detail: `Aiosell adjusts rates down intelligently during low-demand periods to fill rooms that would otherwise stay empty. ${extraRoomNights} additional room nights/month at ₹${adr.toLocaleString('en-IN')} ADR = <strong style="color:var(--grn)">${fmt(extraRNrev)}/mo</strong> in revenue that simply didn't exist before.`
-    },
-    {
-      icon: '📈',
-      label: 'Higher rates during peak demand',
-      value: fmt(highDemandGain) + '/mo',
-      pct: '~4% uplift',
-      color: 'var(--red)',
-      detail: `On sold-out weekends, festivals, events, and high-demand windows — Aiosell pushes rates up automatically. Most hotels leave 20–30% margin on the table on their best nights by holding base rates. Capturing just part of this adds <strong style="color:var(--grn)">${fmt(highDemandGain)}/mo</strong>.`
-    },
-    {
-      icon: '📅',
-      label: 'Weekday / weekend rate adjustments',
-      value: fmt(weeklyGain) + '/mo',
-      pct: '~3% uplift',
-      color: 'var(--gold)',
-      detail: `Business hotels see demand spikes Mon–Thu. Leisure hotels fill on Fri–Sun. Aiosell applies day-of-week weightage automatically — so you're not charging the same rate on a quiet Tuesday as a packed Friday. This alone adds <strong style="color:var(--grn)">${fmt(weeklyGain)}/mo</strong> over time.`
-    },
-    {
-      icon: '📊',
-      label: 'Richer data → smarter decisions',
-      value: fmt(dataGain) + '/mo',
-      pct: '~3% uplift',
-      color: 'var(--blu)',
-      detail: `When PMS, Channel Manager, RMS, and Booking Engine are all in one system, every booking — online and offline — feeds a single intelligence layer. You see pickup pace, lead time trends, source mix, and RevPAR all in one place. Better data means better decisions: faster response to demand shifts, fewer rate errors, and no blind spots. Worth <strong style="color:var(--grn)">${fmt(dataGain)}/mo</strong> conservatively.`
-    },
-  ];
-
-  document.getElementById('upliftBreakdown').innerHTML = upliftRows.map((r,i) => `
-    <div style="background:var(--s2);border:1px solid var(--bd);border-radius:6px;overflow:hidden;cursor:pointer" onclick="this.querySelector('.ub-detail').style.display=this.querySelector('.ub-detail').style.display==='none'?'block':'none'">
-      <div style="display:flex;align-items:center;gap:9px;padding:8px 10px">
-        <div style="font-size:.9rem;flex-shrink:0">${r.icon}</div>
-        <div style="flex:1;font-size:.73rem;font-weight:600;color:var(--w)">${r.label}</div>
-        <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:${r.color};flex-shrink:0">${r.pct}</div>
-        <div style="font-family:'DM Mono',monospace;font-size:.7rem;font-weight:500;color:var(--grn);flex-shrink:0;margin-left:4px">${r.value}</div>
-        <div style="color:var(--dim);font-size:.7rem;flex-shrink:0;margin-left:2px">+</div>
-      </div>
-      <div class="ub-detail" style="display:none;border-top:1px solid var(--bd);padding:8px 10px;font-size:.69rem;color:#BBBBBB;line-height:1.55">${r.detail}</div>
-    </div>`).join('');
-
-  document.getElementById('calcNote').innerHTML =
-    `Total revenue: <strong>${fmt(monthly)}/mo</strong> · Online portion: <strong>${fmt(online)}/mo</strong> · 
-    Aiosell fee: <strong>${fmt(fee)}/mo</strong> · OTA commission on all online: <strong style="color:var(--red)">${fmt(otaComm)}/mo</strong>. 
-    A 15% uplift adds <strong>+${fmt(up15)}/mo</strong>, netting <strong>${fmt(net)}/mo after fees</strong>.`;
+  noteEl.innerHTML =
+    `${fmtN(soldRN)} room nights sold/mo &nbsp;·&nbsp; OTA share: ${fmtN(Math.round(otaRN))} RN &nbsp;·&nbsp;
+    OTA commission: <strong style="color:var(--red)">${fmt(otaCommAmt)}/mo</strong> &nbsp;·&nbsp;
+    Aiosell fee: <strong style="color:var(--gold)">${fmt(aiosellFee)}/mo</strong>`;
 }
 
 // ─── VIDEO DATA ───
@@ -829,6 +857,12 @@ const VIDEOS = [
   { id:'Gl6FumYnItg', title:'How to Bulk Update Inventory', cat:'Channel Manager', catClass:'grn', module:'support_cm' },
   { id:'QA339wIVcDY', title:'How to Apply Channel Multiplier', cat:'Channel Manager', catClass:'grn', module:'support_cm' },
   { id:'1heE8fjTRt0', title:'How to Update Inventory', cat:'Channel Manager', catClass:'grn', module:'support_cm' },
+  // Support — Booking Engine
+  { id:'cceMlaalXqw', title:'How to Change BE Ratio', cat:'Booking Engine', catClass:'blu', module:'support_be' },
+  { id:'fvADdlEupk0', title:'How to Add Photos for BE', cat:'Booking Engine', catClass:'blu', module:'support_be' },
+  { id:'Bbu2d8KSXF8', title:'How to Add Description for Each Room Type', cat:'Booking Engine', catClass:'blu', module:'support_be' },
+  { id:'27ymFNf0rYo', title:'How to Add Policies & Check-in/Check-out Time', cat:'Booking Engine', catClass:'blu', module:'support_be' },
+  { id:'WrziXn0SkmM', title:'How to Add Amenities for BE', cat:'Booking Engine', catClass:'blu', module:'support_be' },
 ];
 
 // Suggested videos per profile
@@ -851,6 +885,7 @@ const VIDEO_SECTIONS = [
 
 const SUPPORT_VIDEO_SECTIONS = [
   { key:'support_cm', label:'Channel Manager — How-To Guides', hdClass:'grn', filter: () => VIDEOS.filter(v => v.module==='support_cm') },
+  { key:'support_be', label:'Booking Engine — How-To Guides',  hdClass:'blu', filter: () => VIDEOS.filter(v => v.module==='support_be') },
 ];
 
 // ═══════════════════════════════════
