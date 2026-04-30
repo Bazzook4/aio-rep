@@ -17,6 +17,15 @@
   --w:#1E1535;--dim:#6E6488;--dim2:#D5CFEA;
   --nav-w:196px;
 }
+body.dark{
+  --bg:#0E0E12;--s1:#16161C;--s2:#1E1E26;--s3:#24242E;
+  --bd:#2E2E3A;--bd2:#3D3D50;
+  --gold:#7B6FFF;--gd:rgba(123,111,255,.10);--gb:rgba(123,111,255,.25);
+  --grn:#22B389;--gnd:rgba(34,179,137,.10);
+  --red:#E05252;--rdd:rgba(224,82,82,.10);
+  --blu:#7B6FFF;--bld:rgba(123,111,255,.10);
+  --w:#F0EEF8;--dim:#8A85A0;--dim2:#3A3750;
+}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--w);min-height:100vh;overflow:hidden}
 
@@ -26,6 +35,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--w);min-he
 .bar-div{width:1px;height:14px;background:var(--bd2);flex-shrink:0}
 .bar-mode{font-size:.72rem;color:var(--dim);flex:1}
 .bar-tag{font-family:'DM Mono',monospace;font-size:.54rem;padding:2px 8px;border-radius:3px;background:var(--gd);border:1px solid var(--gb);color:var(--gold);letter-spacing:1.5px;flex-shrink:0}
+.theme-toggle{display:flex;align-items:center;gap:0;border:1px solid var(--bd2);border-radius:6px;overflow:hidden;flex-shrink:0}
+.theme-toggle button{background:none;border:none;font-family:'DM Mono',monospace;font-size:.46rem;padding:4px 9px;cursor:pointer;color:var(--dim);transition:background .12s,color .12s;letter-spacing:.5px;white-space:nowrap}
+.theme-toggle button.on{background:var(--gold);color:#fff}
+.theme-toggle button:not(.on):hover{background:var(--s3);color:var(--w)}
 
 /* ── APP SHELL ── */
 .app-shell{display:flex;height:calc(100vh - 46px)}
@@ -311,22 +324,62 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .au{animation:up .2s ease both}
 
 /* ── SHARE TAB ── */
-.share-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;transition:background .1s}
-.share-row:hover{background:var(--s3)}
-.share-pill{font-family:'DM Mono',monospace;font-size:.44rem;border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;flex-shrink:0;color:var(--dim);white-space:nowrap;line-height:1.4}
-.share-title{flex:1;font-size:.72rem;color:var(--w);line-height:1.3}
-.share-copy-btn{background:var(--gold);color:#fff;border:none;border-radius:4px;font-family:'DM Mono',monospace;font-size:.48rem;padding:3px 9px;cursor:pointer;flex-shrink:0;white-space:nowrap;letter-spacing:.3px}
-.share-open-btn{background:none;border:1px solid var(--bd2);border-radius:4px;font-family:'DM Mono',monospace;font-size:.48rem;padding:3px 7px;color:var(--dim);text-decoration:none;flex-shrink:0;white-space:nowrap}
-.share-sec-hdr{display:flex;align-items:center;gap:8px;padding:12px 14px 5px;font-family:'DM Mono',monospace;font-size:.44rem;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}
+.share-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:6px 12px 10px}
+.share-card{display:flex;flex-direction:column;gap:6px;padding:9px 10px 9px;border-radius:8px;border:1px solid var(--bd);background:var(--s1);transition:box-shadow .12s,border-color .12s;cursor:pointer}
+.share-card:hover{border-color:var(--bd2);box-shadow:0 2px 8px rgba(91,63,191,.10)}
+.share-card-top{display:flex;align-items:flex-start;gap:6px;margin-bottom:2px}
+.share-card-row{display:flex;align-items:center;gap:8px}
+.share-card-body{flex:1;font-size:.68rem;color:var(--w);line-height:1.3;font-weight:500}
+.share-pill{font-family:'DM Mono',monospace;font-size:.40rem;border:1px solid var(--bd2);border-radius:3px;padding:2px 5px;flex-shrink:0;color:var(--dim);white-space:nowrap;line-height:1.4}
+.share-copy-btn{background:var(--gold);color:#fff;border:none;border-radius:4px;font-family:'DM Mono',monospace;font-size:.40rem;padding:3px 8px;cursor:pointer;flex-shrink:0;white-space:nowrap;letter-spacing:.3px}
+.share-open-btn{background:none;border:1px solid var(--bd2);border-radius:4px;font-family:'DM Mono',monospace;font-size:.40rem;padding:3px 6px;color:var(--dim);text-decoration:none;flex-shrink:0;white-space:nowrap;display:flex;align-items:center;justify-content:center}
+.share-sec-hdr{display:flex;align-items:center;gap:8px;padding:14px 14px 4px;font-family:'DM Mono',monospace;font-size:.44rem;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}
 .share-sec-count{background:var(--s3);border:1px solid var(--bd);border-radius:3px;padding:1px 6px;font-size:.44rem;color:var(--dim)}
+.share-card.hidden{display:none}
+/* filter chips */
+.share-filter-bar{display:flex;flex-wrap:wrap;gap:5px;padding:7px 12px 8px;border-bottom:1px solid var(--bd)}
+.share-chip{font-family:'DM Mono',monospace;font-size:.42rem;border:1px solid var(--bd2);border-radius:20px;padding:3px 10px;cursor:pointer;background:var(--s2);color:var(--dim);transition:all .12s;white-space:nowrap;letter-spacing:.3px}
+.share-chip:hover{border-color:var(--gold);color:var(--gold)}
+.share-chip.on{background:var(--gold);border-color:var(--gold);color:#fff}
+/* preview modal */
+.share-preview-overlay{display:none;position:fixed;inset:0;background:rgba(30,21,53,.55);z-index:1000;align-items:center;justify-content:center;padding:24px}
+.share-preview-overlay.open{display:flex}
+.share-preview-box{background:var(--s1);border-radius:12px;border:1px solid var(--bd);width:100%;max-width:560px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(30,21,53,.18)}
+.share-preview-head{display:flex;align-items:center;gap:10px;padding:14px 16px 12px;border-bottom:1px solid var(--bd);flex-shrink:0}
+.share-preview-pill{font-family:'DM Mono',monospace;font-size:.42rem;border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;color:var(--dim);white-space:nowrap}
+.share-preview-title{flex:1;font-size:.76rem;font-weight:600;color:var(--w);line-height:1.3}
+.share-preview-close{background:none;border:none;font-size:1.1rem;color:var(--dim);cursor:pointer;padding:2px 6px;border-radius:4px;line-height:1}
+.share-preview-close:hover{background:var(--s3);color:var(--w)}
+.share-preview-body{flex:1;overflow-y:auto;padding:14px 16px;scrollbar-width:thin;scrollbar-color:var(--bd) transparent}
+.share-preview-text{font-family:'DM Sans',sans-serif;font-size:.76rem;color:var(--w);line-height:1.7;white-space:pre-wrap;word-break:break-word}
+.share-preview-foot{padding:12px 16px;border-top:1px solid var(--bd);display:flex;gap:8px;flex-shrink:0}
+.share-preview-iframe{width:100%;aspect-ratio:16/9;border:none;border-radius:6px;display:block}
 </style>
 </head>
 <body>
+
+<!-- Share Preview Modal -->
+<div class="share-preview-overlay" id="sharePreviewOverlay" onclick="if(event.target===this)closeSharePreview()">
+  <div class="share-preview-box">
+    <div class="share-preview-head">
+      <div class="share-preview-pill" id="previewPill"></div>
+      <div class="share-preview-title" id="previewTitle"></div>
+      <button class="share-preview-close" onclick="closeSharePreview()">✕</button>
+    </div>
+    <div class="share-preview-body" id="previewBody"></div>
+    <div class="share-preview-foot" id="previewFoot"></div>
+  </div>
+</div>
 
 <div class="bar">
   <div class="bar-logo">Aiosell</div>
   <div class="bar-div"></div>
   <div class="bar-mode" id="barMode"></div>
+  <div class="theme-toggle">
+    <button id="themeLight" class="on" onclick="setTheme('light')">☀ Light</button>
+    <button id="themeDark" onclick="setTheme('dark')">◑ Dark</button>
+  </div>
+  <div class="bar-div"></div>
   <div class="bar-tag">Internal</div>
 </div>
 
@@ -338,8 +391,11 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     <div class="sidenav-item" id="nav_share" onclick="openMode('share')">
       <span class="sidenav-icon">⬆</span><span class="sidenav-label">Share</span>
     </div>
-    <div class="sidenav-item" id="nav_tools" onclick="openMode('tools')">
-      <span class="sidenav-icon">◈</span><span class="sidenav-label">Tools</span>
+    <div class="sidenav-item" id="nav_share2" onclick="openMode('share2')">
+      <span class="sidenav-icon">✦</span><span class="sidenav-label">Share v2</span>
+    </div>
+    <div class="sidenav-item" id="nav_pricing" onclick="openMode('pricing')">
+      <span class="sidenav-icon">💰</span><span class="sidenav-label">Pricing</span>
     </div>
     <div class="sidenav-item" id="nav_rms" onclick="openMode('rms')">
       <span class="sidenav-icon">⚡</span><span class="sidenav-label">RMS</span>
@@ -354,7 +410,8 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     <!-- OTHER PANES (filled dynamically) -->
     <div class="content-pane" id="pane_rms"></div>
     <div class="content-pane" id="pane_share"></div>
-    <div class="content-pane" id="pane_tools"></div>
+    <div class="content-pane" id="pane_share2"></div>
+    <div class="content-pane" id="pane_pricing"></div>
   </div>
 </div>
 
@@ -870,19 +927,21 @@ const SUGGESTED = {
 };
 
 const VIDEO_SECTIONS = [
-  { key:'suggested', label:'⭐ Suggested for This Conversation', hdClass:'gold',  filter: () => VIDEOS.filter(v => SUGGESTED[sel].includes(v.id)) },
-  { key:'overview',  label:'Overview & Vision',                  hdClass:'gold',  filter: () => VIDEOS.filter(v => v.module==='overview') },
-  { key:'rms',       label:'Revenue Management & Dynamic Pricing',hdClass:'red',  filter: () => VIDEOS.filter(v => v.module==='rms') },
-  { key:'cm',        label:'Channel Manager & Booking Engine',   hdClass:'grn',   filter: () => VIDEOS.filter(v => v.module==='cm') },
-  { key:'pms',       label:'Property Management System (PMS)',   hdClass:'blu',   filter: () => VIDEOS.filter(v => v.module==='pms') },
-  { key:'erp',       label:'ERP — POS, Housekeeping, Inventory, HR', hdClass:'dim', filter: () => VIDEOS.filter(v => v.module==='erp') },
-  { key:'addons',    label:'Add-Ons & Mobile',                   hdClass:'dim',   filter: () => VIDEOS.filter(v => v.module==='addons') },
-  { key:'news',      label:'Industry & News',                    hdClass:'dim',   filter: () => VIDEOS.filter(v => v.module==='news') },
+  { key:'suggested', label:'Sales — Demo Videos', hdClass:'gold',  filter: () => VIDEOS.filter(v => SUGGESTED[sel].includes(v.id)) },
+  { key:'overview',  label:'Sales — Demo Videos', hdClass:'gold',  filter: () => VIDEOS.filter(v => v.module==='overview') },
+  { key:'rms',       label:'Sales — Demo Videos', hdClass:'red',   filter: () => VIDEOS.filter(v => v.module==='rms') },
+  { key:'cm',        label:'Sales — Demo Videos', hdClass:'grn',   filter: () => VIDEOS.filter(v => v.module==='cm') },
+  { key:'pms',       label:'Sales — Demo Videos', hdClass:'blu',   filter: () => VIDEOS.filter(v => v.module==='pms') },
+  { key:'erp',       label:'Sales — Demo Videos', hdClass:'dim',   filter: () => VIDEOS.filter(v => v.module==='erp') },
+  { key:'addons',    label:'Sales — Demo Videos', hdClass:'dim',   filter: () => VIDEOS.filter(v => v.module==='addons') },
+  { key:'news',      label:'Sales — Demo Videos', hdClass:'dim',   filter: () => VIDEOS.filter(v => v.module==='news') },
 ];
 
 const SUPPORT_VIDEO_SECTIONS = [
-  { key:'support_cm', label:'Channel Manager — How-To Guides', hdClass:'grn', filter: () => VIDEOS.filter(v => v.module==='support_cm') },
-  { key:'support_be', label:'Booking Engine — How-To Guides',  hdClass:'blu', filter: () => VIDEOS.filter(v => v.module==='support_be') },
+  { key:'support_cm',   label:'Support — How To',      hdClass:'grn', filter: () => VIDEOS.filter(v => v.module==='support_cm') },
+  { key:'support_be',   label:'Support — How To',      hdClass:'blu', filter: () => VIDEOS.filter(v => v.module==='support_be') },
+  { key:'onboard_cm',   label:'Support — Onboarding',  hdClass:'grn', filter: () => VIDEOS.filter(v => v.module==='cm') },
+  { key:'onboard_pms',  label:'Support — Onboarding',  hdClass:'blu', filter: () => VIDEOS.filter(v => v.module==='pms') },
 ];
 
 // ═══════════════════════════════════
@@ -1450,7 +1509,7 @@ function openImg(dataUrl) {
 // ═══════════════════════════════════
 const TPL_CATEGORIES = [
   {
-    id: 'followup', icon: '🔁', label: 'Follow Ups', color: 'var(--gold)',
+    id: 'followup', icon: '🔁', label: 'Sales — Follow Up', color: 'var(--gold)',
     templates: [
       { id:'f1', label:'Follow 1 — Trial Offer', text:`Hi @,\nWe tried reaching out to you regarding your software requirements.\n\nWe're offering a 15-day free trial, so you can explore Aiosell before making any commitment. To get started, please complete the onboarding form below and we'll activate your trial account:\nhttps://zfrmz.com/XrAlMhLuFnuKDcitHz0G\n\nOnce submitted, our team will connect with you for the next steps.` },
       { id:'f2', label:'Follow 2 — Confirm Onboarding', text:`Hi @,\nKindly confirm if we should proceed with onboarding your property this week. Our team is ready to initiate the trial and implementation immediately.` },
@@ -1463,7 +1522,7 @@ const TPL_CATEGORIES = [
     ]
   },
   {
-    id: 'onboarding', icon: '🚀', label: 'Onboarding', color: 'var(--grn)',
+    id: 'onboarding', icon: '🚀', label: 'Support — Onboarding', color: 'var(--grn)',
     templates: [
       { id:'ob1', label:'Onboarding 1 — Send Form', text:`Here's the onboarding form; kindly click on the link and fill out the onboarding form to set up the account.\n\nhttps://zfrmz.com/XrAlMhLuFnuKDcitHz0G\n\nDo let us know once you submit it.` },
       { id:'ob2', label:'Onboarding 2 — Full Next Steps', text:`To start onboarding, please fill this form: https://zfrmz.com/XrAlMhLuFnuKDcitHz0G\nOnce you submit, we will send your login details on Email & WhatsApp.\n\nNext Steps:\n1. Check if all Rooms & Rate Plans are added correctly in Aiosell.\n2. Turn ON Aiosell as Channel Manager in all your OTA accounts (like Booking.com, Agoda etc.).\n   Guide: https://support.aiosell.com/portal/en/kb/articles/aiosell-channel-manager-integration-guide\n3. If room names are different on OTAs, please tell us which Aiosell room matches which OTA room.\n   Example: Aiosell Deluxe Room → Booking.com Standard Room\n4. If you have a restaurant, please share your food menu here:\n   https://docs.google.com/spreadsheets/d/1XVks58r217BFoVulIgyw_II0_aCPZt_TZe5kpCNmJxA/edit?usp=sharing\n5. To upload photos on your website/booking page, please follow this guide:\n   https://support.aiosell.com/portal/en/kb/articles/booking-engine-configuration-photos` },
@@ -1472,7 +1531,7 @@ const TPL_CATEGORIES = [
     ]
   },
   {
-    id: 'general', icon: '📋', label: 'General', color: 'var(--blu)',
+    id: 'general', icon: '📋', label: 'Support — How To', color: 'var(--blu)',
     templates: [
       { id:'g1', label:'Bank Details — AioBank', text:`Hotel ID:\nHotel Name:\nEmail Address:\nAccount Name:\nBank Name:\nCurrent Account No:\nIFSC Code:\nBranch Name:` },
       { id:'g2', label:'New OTA Request', text:`Hi @ can you please check if [requested OTA name] company is already integrated with aggregators that we are already linked with:\n- Hyperguest\n- Bakuun\n- Channex\n- HotelBeds\n- Expedia Network\n- Booking.com Network\n\nIf not then we are also open for direct integration, kindly connect us with their team and we will take it forward from there.` },
@@ -1485,7 +1544,7 @@ const TPL_CATEGORIES = [
     ]
   },
   {
-    id: 'support', icon: '🛠', label: 'Support', color: 'var(--red)',
+    id: 'support', icon: '🛠', label: 'Support — How To', color: 'var(--red)',
     templates: [
       { id:'s1', label:'Inactive Property', text:`Hi Team,\n\nJust reaching out to follow up and make sure everything is working smoothly with the system. As we checked there is no activity in stay view under PMS from [last activity date].\n\nPlease let us know if there's anything we can assist with, we're always here to help.\n\nThank you.` },
       { id:'s2', label:'Status Check — PMS', text:`Dear Team,\n\nWe hope you are doing well.\n\nJust a quick check-in to ensure you're using the system smoothly. If you're facing any issues with bookings, availability updates, rate changes, or overall system usage, please let us know. We are here to help you at every step.\n\nYour update will help us ensure seamless operations and uninterrupted service for your property.` },
@@ -1499,7 +1558,7 @@ const TPL_CATEGORIES = [
     ]
   },
   {
-    id: 'reseller', icon: '🤝', label: 'Reseller', color: 'var(--gold)',
+    id: 'reseller', icon: '🤝', label: 'Sales — Follow Up', color: 'var(--gold)',
     templates: [
       { id:'r1', label:'Whitelabel Partnership — USD', text:`Whitelabel Partnership (USD)\n\nSell Aiosell under your own brand name with full control over pricing and billing.\n• Aiosell invoices you, and you invoice the hotel.\n• You set your own margins.\n• Whitelabel Fees: $12/month\n\nVolume-based Discount on Listed Prices:\n• 05–20 Hotels → 10% Discount\n• 21–50 Hotels → 15% Discount\n• 50+ Hotels → 20% Discount` },
       { id:'r2', label:'Whitelabel Partnership — INR', text:`Whitelabel Partnership (INR)\n\nSell Aiosell under your own brand name with full control over pricing and billing.\n• Aiosell invoices you, and you invoice the hotel.\n• You set your own margins.\n• Whitelabel Fees: ₹1,000 + GST per month\n\nVolume-based Discount on Listed Prices:\n• 05–20 Hotels → 10% Discount\n• 21–50 Hotels → 15% Discount\n• 50+ Hotels → 20% Discount` },
@@ -1508,7 +1567,7 @@ const TPL_CATEGORIES = [
     ]
   },
   {
-    id: 'techpartner', icon: '🔌', label: 'Tech Partners', color: 'var(--dim)',
+    id: 'techpartner', icon: '🔌', label: 'API Document', color: 'var(--dim)',
     templates: [
       { id:'tp1', label:'PMS API — Getting Started', text:`Aiosell Channel Manager API Document (PMS):\nhttps://support.aiosell.com/portal/en/kb/articles/aiosell-rest-api-documentation-property-management-system-to-channel-manager\n\nNext Steps:\n1. Go through the doc to understand how data (rates, inventory, bookings, etc.) is exchanged and the payload format.\n2. Test API endpoints using Postman or backend scripts (Python, PHP, etc.) — start with Rates & Inventory API and check if updates reflect in our sandbox environment.\n3. Share your Webhook/Endpoint where we can send test bookings.\n4. Once all flows are clear, you can build automation from your PMS side.\n\nSandbox Login:\nURL: live.aiosell.com\nUsername: sandboxpms\nPassword: sandboxpms` },
       { id:'tp2', label:'OTA API — Getting Started', text:`Aiosell Channel Manager API Document (OTA/BE):\nhttps://support.aiosell.com/portal/en/kb/articles/aiosell-rest-api-documentation-ota-booking-engine-to-channel-manager\n\nNext Steps:\n1. Go through the doc to understand how data (rates, inventory, bookings, etc.) is exchanged and the payload format.\n2. Share your Webhook/Endpoint where we can test POST of RATES & INVENTORY.\n3. Test if you create a reservation, does it land into our sandbox account.\n4. Once all flows are clear, you can connect a Real Property.\n\nSandbox Login:\nURL: live.aiosell.com\nUsername: sandboxOTA\nPassword: sandboxOTA` },
@@ -1591,7 +1650,7 @@ function tplDoSearch(q) {
 const KB_CATEGORIES = [
   {
     id: 'cm_guide',
-    label: 'Channel Manager — Setup Guides',
+    label: 'Support — Onboarding',
     icon: '🔗',
     color: 'var(--grn)',
     articles: [
@@ -1607,7 +1666,7 @@ const KB_CATEGORIES = [
   },
   {
     id: 'cm_ops',
-    label: 'Channel Manager — Operations',
+    label: 'Support — Onboarding',
     icon: '⚙️',
     color: 'var(--grn)',
     articles: [
@@ -1617,7 +1676,7 @@ const KB_CATEGORIES = [
   },
   {
     id: 'cm_support',
-    label: 'Channel Manager — Support',
+    label: 'Support — How To',
     icon: '🛠',
     color: 'var(--grn)',
     articles: [
@@ -1641,7 +1700,7 @@ const KB_CATEGORIES = [
   },
   {
     id: 'general',
-    label: 'General',
+    label: 'Support — How To',
     icon: '📋',
     color: 'var(--gold)',
     articles: [
@@ -1652,7 +1711,7 @@ const KB_CATEGORIES = [
   },
   {
     id: 'pms',
-    label: 'Property Management System',
+    label: 'Support — How To',
     icon: '🏨',
     color: 'var(--blu)',
     articles: [
@@ -1661,7 +1720,7 @@ const KB_CATEGORIES = [
   },
   {
     id: 'api',
-    label: 'API Documentation',
+    label: 'API Document',
     icon: '🔌',
     color: 'var(--dim)',
     articles: [
@@ -1685,7 +1744,7 @@ const KB_CATEGORIES = [
   },
   {
     id: 'pos',
-    label: 'Point of Sale',
+    label: 'Support — How To',
     icon: '🧾',
     color: 'var(--gold)',
     articles: [
@@ -1694,7 +1753,7 @@ const KB_CATEGORIES = [
   },
   {
     id: 'be',
-    label: 'Booking Engine',
+    label: 'Support — Onboarding',
     icon: '🌐',
     color: 'var(--red)',
     articles: [
@@ -1705,7 +1764,7 @@ const KB_CATEGORIES = [
   },
   {
     id: 'payments',
-    label: 'Payment Gateway',
+    label: 'Support — Onboarding',
     icon: '💳',
     color: 'var(--gold)',
     articles: [
@@ -3212,14 +3271,14 @@ const SHARE_STAGES = [
   {
     id:'sales', label:'Sales', icon:'🎯', desc:'Prospecting & closing',
     tplCats:  ['followup','general','reseller','techpartner'],
-    kbCats:   ['cm_guide','general','api'],
+    kbCats:   ['general','api'],
     vidKeys:  ['suggested','overview','rms','cm','pms','erp','addons','news'],
   },
   {
     id:'onboard', label:'Onboard', icon:'🚀', desc:'Setup & activation',
     tplCats:  ['onboarding'],
-    kbCats:   ['cm_ops','be','payments'],
-    vidKeys:  ['cm','pms'],
+    kbCats:   ['cm_guide','cm_ops','be','payments'],
+    vidKeys:  ['onboard_cm','onboard_pms'],
   },
   {
     id:'support', label:'Support', icon:'🛠', desc:'Troubleshooting & guides',
@@ -3232,33 +3291,46 @@ const SHARE_STAGES = [
 function buildShareHTML() {
   const allVidSects = [...VIDEO_SECTIONS, ...SUPPORT_VIDEO_SECTIONS];
 
-  function tplRow(cat, t) {
+  function tplCard(cat, t) {
     const safe = t.text.replace(/\\/g,'\\\\').replace(/"/g,'&quot;').replace(/\n/g,'\\n');
-    return `<div class="share-row" data-label="${t.label.replace(/"/g,'&quot;')}" data-cat="${cat.label}" data-text="${safe}" onclick="shareTPLcopy('${t.id}',this)">
-      <div class="share-pill">${cat.label}</div>
-      <div class="share-title">${t.label}</div>
-      <button id="stplbtn_${t.id}" class="share-copy-btn">Copy</button>
-    </div>`;
-  }
-
-  function kbRow(cat, a) {
-    const st = a.title.replace(/'/g,'\\x27'); const su = a.url.replace(/'/g,'\\x27');
-    return `<div class="share-row" data-label="${a.title.replace(/"/g,'&quot;')}" data-cat="${cat.label}">
-      <div class="share-pill">${cat.label}</div>
-      <div class="share-title">${a.title}</div>
-      <div style="display:flex;gap:5px;flex-shrink:0">
-        <button onclick="event.stopPropagation();shareKBcopy(this,'${su}','${st}')" class="share-copy-btn">Copy</button>
-        <a href="${a.url}" target="_blank" rel="noopener" class="share-open-btn">Open ↗</a>
+    const previewSafe = t.text.replace(/\\/g,'\\\\').replace(/'/g,'\\x27').replace(/\n/g,'\\n');
+    const catSafe = cat.label.replace(/'/g,'\\x27'); const lblSafe = t.label.replace(/'/g,'\\x27');
+    return `<div class="share-card" data-label="${t.label.replace(/"/g,'&quot;')}" data-cat="${cat.label}" data-text="${safe}">
+      <div class="share-card-top"><div class="share-pill">${cat.label}</div></div>
+      <div class="share-card-row">
+        <div class="share-card-body">${t.label}</div>
+        <button class="share-open-btn" onclick="event.stopPropagation();openSharePreview('tpl','${catSafe}','${lblSafe}','${previewSafe}')">View</button>
+        <button id="stplbtn_${t.id}" class="share-copy-btn" onclick="event.stopPropagation();shareTPLcopy('${t.id}',this.closest('.share-card'))">Copy</button>
       </div>
     </div>`;
   }
 
-  function vidRow(sect, v) {
-    const lbl = sect.label.split('—')[0].trim().split('&')[0].trim();
-    return `<div class="share-row" data-label="${v.title.replace(/"/g,'&quot;')}" data-cat="${sect.label}">
-      <div class="share-pill">${lbl}</div>
-      <div class="share-title">${v.title}</div>
-      <a href="https://www.youtube.com/watch?v=${v.id}" target="_blank" rel="noopener" class="share-open-btn">Open ↗</a>
+  function kbCard(cat, a) {
+    const st = a.title.replace(/'/g,'\\x27'); const su = a.url.replace(/'/g,'\\x27');
+    const catSafe = cat.label.replace(/'/g,'\\x27');
+    return `<div class="share-card" data-label="${a.title.replace(/"/g,'&quot;')}" data-cat="${cat.label}">
+      <div class="share-card-top"><div class="share-pill">${cat.label}</div></div>
+      <div class="share-card-row">
+        <div class="share-card-body">${a.title}</div>
+        <button class="share-open-btn" onclick="event.stopPropagation();openSharePreview('kb','${catSafe}','${st}','${su}')">View</button>
+        <button onclick="event.stopPropagation();shareKBcopy(this,'${su}','${st}')" class="share-copy-btn">Copy</button>
+        <a href="${a.url}" target="_blank" rel="noopener" class="share-open-btn">↗</a>
+      </div>
+    </div>`;
+  }
+
+  function vidCard(sect, v) {
+    const lbl = sect.label;
+    const vu = `https://www.youtube.com/watch?v=${v.id}`;
+    const vt = v.title.replace(/'/g,'\\x27'); const vurl = vu.replace(/'/g,'\\x27');
+    const lblSafe = lbl.replace(/'/g,'\\x27'); const vtSafe = v.title.replace(/'/g,'\\x27');
+    return `<div class="share-card" data-label="${v.title.replace(/"/g,'&quot;')}" data-cat="${sect.label}">
+      <div class="share-card-top"><div class="share-pill">${lbl}</div></div>
+      <div class="share-card-row">
+        <div class="share-card-body">${v.title}</div>
+        <button class="share-open-btn" onclick="event.stopPropagation();openSharePreview('vid','${lblSafe}','${vtSafe}','${v.id}')">▶</button>
+        <button onclick="event.stopPropagation();shareKBcopy(this,'${vurl}','${vt}')" class="share-copy-btn">Copy</button>
+      </div>
     </div>`;
   }
 
@@ -3267,25 +3339,49 @@ function buildShareHTML() {
   }
 
   const panes = SHARE_STAGES.map((stage, si) => {
+    // ── Static pane (Pricing & Agreement) ──
+    if(stage._static) {
+      return `<div id="share_pane_${stage.id}" class="share-stage-pane" style="display:none;padding-bottom:20px">
+        <div style="padding:14px 14px 8px">
+          ${secHdr('Pricing Charts', '')}
+          ${buildPricingHTML()}
+        </div>
+        <div style="padding:0 14px 8px">
+          ${secHdr('Reseller Agreements', '')}
+          ${buildAgreementHTML().replace('<div style="padding:14px 18px">','<div>').replace('</div>','')}
+        </div>
+      </div>`;
+    }
+
     const tplCats = TPL_CATEGORIES.filter(c => stage.tplCats.includes(c.id));
     const kbCats  = KB_CATEGORIES.filter(c  => stage.kbCats.includes(c.id));
     const vSects  = allVidSects.filter(s => stage.vidKeys.includes(s.key));
 
-    const tplHTML = tplCats.flatMap(c => c.templates.map(t => tplRow(c,t))).join('');
-    const kbHTML  = kbCats.flatMap(c  => c.articles.map(a  => kbRow(c,a))).join('');
+    const tplHTML = tplCats.flatMap(c => c.templates.map(t => tplCard(c,t))).join('');
+    const kbHTML  = kbCats.flatMap(c  => c.articles.map(a  => kbCard(c,a))).join('');
     const vidHTML = vSects.flatMap(s  => {
       const vids = s.filter ? s.filter() : VIDEOS.filter(v => v.module === s.key);
-      return vids.map(v => vidRow(s,v));
+      return vids.map(v => vidCard(s,v));
     }).join('');
 
     const tplN = tplCats.reduce((n,c)=>n+c.templates.length,0);
     const kbN  = kbCats.reduce((n,c)=>n+c.articles.length,0);
     const vidN = vSects.reduce((n,s)=>n+(s.filter?s.filter():VIDEOS.filter(v=>v.module===s.key)).length,0);
 
+    // collect unique category labels for filter chips
+    const cats = [];
+    tplCats.forEach(c => { if(!cats.includes(c.label)) cats.push(c.label); });
+    kbCats.forEach(c  => { if(!cats.includes(c.label)) cats.push(c.label); });
+    vSects.forEach(s  => { if(!cats.includes(s.label)) cats.push(s.label); });
+    const chips = [`<button class="share-chip on" data-cat="" onclick="shareFilterCat(this,'${stage.id}','')">All</button>`,
+      ...cats.map(c => `<button class="share-chip" data-cat="${c.replace(/"/g,'&quot;')}" onclick="shareFilterCat(this,'${stage.id}','${c.replace(/'/g,'\\x27')}')">${c}</button>`)
+    ].join('');
+
     return `<div id="share_pane_${stage.id}" class="share-stage-pane" style="display:none;padding-bottom:20px">
-      ${tplN ? secHdr('Templates — tap to copy', tplN) + `<div id="stpl_${stage.id}">${tplHTML}</div>` : ''}
-      ${kbN  ? secHdr('Knowledge Base — tap to copy link', kbN) + `<div id="skb_${stage.id}">${kbHTML}</div>` : ''}
-      ${vidN ? secHdr('Videos — tap to open', vidN) + `<div id="svid_${stage.id}">${vidHTML}</div>` : ''}
+      <div id="sfilter_${stage.id}" class="share-filter-bar">${chips}</div>
+      ${tplN ? secHdr('Templates — tap to copy', tplN) + `<div id="stpl_${stage.id}" class="share-grid">${tplHTML}</div>` : ''}
+      ${kbN  ? secHdr('Knowledge Base — tap to copy link', kbN) + `<div id="skb_${stage.id}" class="share-grid">${kbHTML}</div>` : ''}
+      ${vidN ? secHdr('Videos — tap to open', vidN) + `<div id="svid_${stage.id}" class="share-grid">${vidHTML}</div>` : ''}
     </div>`;
   }).join('');
 
@@ -3322,8 +3418,10 @@ function switchShareStage(id) {
     if(tab)  tab.style.borderBottomColor = s.id===id ? 'var(--gold)' : 'transparent';
     if(lbl)  lbl.style.color = s.id===id ? 'var(--gold)' : 'var(--dim)';
   });
+  _shareActiveCat = '';
   const inp = document.getElementById('shareSearch');
-  if(inp) { inp.value = ''; shareDoSearch(''); }
+  if(inp) { inp.value = ''; inp.parentElement.style.display = ''; }
+  shareApplyFilters('', '');
 }
 
 function shareTPLcopy(id, rowEl) {
@@ -3344,22 +3442,94 @@ function shareKBcopy(btn, url, title) {
   });
 }
 
+let _shareActiveCat = '';
+
+function shareFilterCat(chipEl, stageId, cat) {
+  _shareActiveCat = cat;
+  // update chip styles
+  const bar = document.getElementById('sfilter_'+stageId);
+  if(bar) bar.querySelectorAll('.share-chip').forEach(c => {
+    c.classList.toggle('on', c.dataset.cat === cat);
+  });
+  // re-apply filter + current search
+  const inp = document.getElementById('shareSearch');
+  shareApplyFilters((inp ? inp.value : ''), cat);
+}
+
 function shareDoSearch(q) {
+  shareApplyFilters(q, _shareActiveCat);
+}
+
+function shareApplyFilters(q, cat) {
   const term = q.toLowerCase().trim();
   const stage = _shareStage;
   ['tpl','kb','vid'].forEach(type => {
     const list = document.getElementById('s'+type+'_'+stage);
     if(!list) return;
-    let any = false;
-    list.querySelectorAll('.share-row').forEach(row => {
-      const match = !term
+    list.querySelectorAll('.share-card').forEach(row => {
+      const rowCat = (row.dataset.cat||'');
+      // for videos the pill label is a trimmed prefix — check startsWith
+      const catMatch = !cat || rowCat === cat || rowCat.startsWith(cat);
+      const termMatch = !term
         || (row.dataset.label||'').toLowerCase().includes(term)
-        || (row.dataset.cat||'').toLowerCase().includes(term)
+        || rowCat.toLowerCase().includes(term)
         || (row.dataset.text||'').toLowerCase().includes(term);
-      row.style.display = match ? '' : 'none';
-      if(match) any = true;
+      row.style.display = (catMatch && termMatch) ? '' : 'none';
     });
   });
+}
+
+let _previewPayload = null;
+
+function openSharePreview(type, pill, title, payload) {
+  _previewPayload = { type, title, payload };
+  document.getElementById('previewPill').textContent  = pill;
+  document.getElementById('previewTitle').textContent = title;
+  const body = document.getElementById('previewBody');
+  const foot = document.getElementById('previewFoot');
+
+  if(type === 'tpl') {
+    const text = payload.replace(/\\n/g,'\n');
+    _previewPayload.text = text;
+    const escaped = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    body.innerHTML = `<div class="share-preview-text">${escaped}</div>`;
+    foot.innerHTML = `<button id="previewCopyBtn" onclick="previewCopy()" style="flex:1;background:var(--gold);color:#fff;border:none;border-radius:6px;font-family:'DM Mono',monospace;font-size:.54rem;padding:8px;cursor:pointer;letter-spacing:.3px">Copy Message</button>`;
+  } else if(type === 'kb') {
+    _previewPayload.text = title + '\n' + payload;
+    body.innerHTML = `<div style="font-size:.72rem;color:var(--dim);margin-bottom:12px;font-family:'DM Mono',monospace;word-break:break-all;line-height:1.5">${payload}</div><p style="font-size:.74rem;color:var(--w);line-height:1.6">Open the article to read its full content.</p>`;
+    foot.innerHTML = `<button id="previewCopyBtn" onclick="previewCopy()" style="flex:1;background:var(--gold);color:#fff;border:none;border-radius:6px;font-family:'DM Mono',monospace;font-size:.54rem;padding:8px;cursor:pointer;letter-spacing:.3px">Copy Link</button>
+      <a href="${payload}" target="_blank" rel="noopener" style="flex:1;display:flex;align-items:center;justify-content:center;background:none;border:1px solid var(--bd2);border-radius:6px;font-family:'DM Mono',monospace;font-size:.54rem;padding:8px;color:var(--dim);text-decoration:none">Open Article ↗</a>`;
+  } else if(type === 'vid') {
+    body.innerHTML = `<iframe class="share-preview-iframe" src="https://www.youtube.com/embed/${payload}?autoplay=1" allow="autoplay;encrypted-media" allowfullscreen></iframe>`;
+    foot.innerHTML = `<a href="https://www.youtube.com/watch?v=${payload}" target="_blank" rel="noopener" style="flex:1;display:flex;align-items:center;justify-content:center;background:none;border:1px solid var(--bd2);border-radius:6px;font-family:'DM Mono',monospace;font-size:.54rem;padding:8px;color:var(--dim);text-decoration:none">Open on YouTube ↗</a>`;
+  }
+
+  document.getElementById('sharePreviewOverlay').classList.add('open');
+  document.addEventListener('keydown', _previewEsc);
+}
+
+function previewCopy() {
+  if(!_previewPayload) return;
+  const text = _previewPayload.text || '';
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('previewCopyBtn');
+    if(!btn) return;
+    const orig = btn.textContent;
+    btn.textContent = 'Copied ✓'; btn.style.background = 'var(--grn)';
+    setTimeout(() => { btn.textContent = orig; btn.style.background = 'var(--gold)'; }, 1800);
+  });
+}
+
+function _previewEsc(e){ if(e.key==='Escape') closeSharePreview(); }
+
+function closeSharePreview() {
+  document.getElementById('sharePreviewOverlay').classList.remove('open');
+  document.removeEventListener('keydown', _previewEsc);
+  // destroy iframe entirely — setting src='' alone isn't enough to stop YouTube audio
+  const body = document.getElementById('previewBody');
+  const foot = document.getElementById('previewFoot');
+  body.innerHTML = '';
+  foot.innerHTML = '';
 }
 
 // ═══════════════════════════════════
@@ -3377,18 +3547,318 @@ function buildToolsHTML() {
   </div>`;
 }
 
+// ═══════════════════════════════════
+// SHARE V2
+// ═══════════════════════════════════
+
+const V2_TOP_PICKS = ['ahioiR4vuHo','xFI5ruBuqgM','LFX_kbz8CJ4','XGn5xo9Ymp0','sdmsX6hVSmk'];
+
+const V2_SALES_GROUPS = [
+  {
+    id:'chase', label:'Chase Lead', icon:'🎯',
+    templates: ['f1','f2','f3','f4','f6','f8'],
+  },
+  {
+    id:'share', label:'Share Info', icon:'📤',
+    templates: ['f5','f7','r1','r2','r3','r4','tp1','tp2','tp3'],
+  },
+  {
+    id:'admin', label:'Admin', icon:'📋',
+    templates: ['g1','g2','g3','g4','g5','g6','g7','g8'],
+  },
+];
+
+// Combined How-To: pairs KB article with matching support video by title keyword
+const V2_HOWTO_PAIRS = [
+  { title:'Mark Stop Sell',        vidId:'pb-Fp4OFwe0', artUrl:'https://support.aiosell.com/portal/en/kb/articles/how-to-mark-stop-sell-aiosell-channel-manager' },
+  { title:'Remove Stop Sell',      vidId:'uHsqzfxu-CM', artUrl:'https://support.aiosell.com/portal/en/kb/articles/how-to-remove-stop-sell-aiosell-channel-manager' },
+  { title:'Check Stop Sell',       vidId:'AZZDYYxjEng', artUrl:'https://support.aiosell.com/portal/en/kb/articles/how-to-check-if-stop-sell-applied-aiosell-channel-manager' },
+  { title:'Mark No Show',          vidId:'e3vjx5y1ym8', artUrl:'https://support.aiosell.com/portal/en/kb/articles/how-to-mark-no-show-aiosell-channel-manager' },
+  { title:'Bulk Update Rates',     vidId:'4MBgWaBk_vg', artUrl:'https://support.aiosell.com/portal/en/kb/articles/how-to-bulk-update-rates-aiosell-channel-manager' },
+  { title:'Bulk Update Inventory', vidId:'Gl6FumYnItg', artUrl:'https://support.aiosell.com/portal/en/kb/articles/how-to-bulk-update-inventory-aiosell-channel-manager' },
+  { title:'Update Inventory',      vidId:'1heE8fjTRt0', artUrl:'https://support.aiosell.com/portal/en/kb/articles/how-to-update-inventory-aiosell-channel-manager' },
+  { title:'Update Min Stay',       vidId:'9e9sNBq9EHo', artUrl:'https://support.aiosell.com/portal/en/kb/articles/how-to-update-min-stay-aiosell-channel-manager' },
+  { title:'Apply Channel Multiplier',vidId:'QA339wIVcDY', artUrl:'https://support.aiosell.com/portal/en/kb/articles/how-to-apply-channel-multiplier-aiosell-channel-manager' },
+  { title:'Create Booking',        vidId:'7sgOZ2hDDAM', artUrl:'https://support.aiosell.com/portal/en/kb/articles/how-to-create-booking-from-channel-manager-aiosell-channel-manager' },
+  { title:'Start Conversation',    vidId:'psTmjGkGxhc', artUrl:'https://support.aiosell.com/portal/en/kb/articles/how-to-start-the-conversation-aiosell-channel-manager' },
+  { title:'Send Voucher',          vidId:'dUfEKOD_7SI', artUrl:'https://support.aiosell.com/portal/en/kb/articles/how-to-send-voucher-aiosell-channel-manager' },
+  { title:'Push Booking to PMS',   vidId:'TwY6wjJEKzQ', artUrl:'https://support.aiosell.com/portal/en/kb/articles/how-to-push-booking-from-cm-to-pms-aiosell-channel-manager' },
+  { title:'Send Payment Link',     vidId:'EhLPLKTV_H4', artUrl:'https://support.aiosell.com/portal/en/kb/articles/how-to-send-payment-link-aiosell-channel-manager' },
+  { title:'Reply to OTA Messages', vidId:'37DwDzAaTA0', artUrl:'https://support.aiosell.com/portal/en/kb/articles/how-to-reply-to-ota-messages-aiosell-channel-manager' },
+  { title:'Change BE Ratio',       vidId:'cceMlaalXqw', artUrl:null },
+  { title:'Add Photos for BE',     vidId:'fvADdlEupk0', artUrl:'https://support.aiosell.com/portal/en/kb/articles/booking-engine-configuration-photos' },
+  { title:'Add Room Descriptions', vidId:'Bbu2d8KSXF8', artUrl:null },
+  { title:'Add Policies & Timings',vidId:'27ymFNf0rYo', artUrl:'https://support.aiosell.com/portal/en/kb/articles/booking-engine-configuration-others' },
+  { title:'Add Amenities for BE',  vidId:'WrziXn0SkmM', artUrl:null },
+];
+
+let _sv2Stage = 'followup';
+let _sv2VideoExpanded = false;
+
+const SV2_TABS = [
+  { id:'followup',   icon:'🔁', label:'Followup',     desc:'Chase & close' },
+  { id:'demovideos', icon:'▶',  label:'Demo Videos',  desc:'Product demos' },
+  { id:'apidocs',    icon:'🔌', label:'API Docs',      desc:'Integration' },
+  { id:'onboard_cm', icon:'🚀', label:'Onboarding',   desc:'CM setup' },
+  { id:'support_cm', icon:'🛠', label:'Support CM',   desc:'How-To guides' },
+  { id:'pms',        icon:'🏨', label:'PMS',           desc:'PMS guides' },
+];
+
+function buildShareV2HTML() {
+  const allTpls = {};
+  TPL_CATEGORIES.forEach(c => c.templates.forEach(t => { allTpls[t.id] = { ...t, catLabel: c.label }; }));
+
+  // ── Template card ──
+  function tplCard2(t) {
+    const safe = t.text.replace(/\\/g,'\\\\').replace(/"/g,'&quot;').replace(/\n/g,'\\n');
+    const previewSafe = t.text.replace(/\\/g,'\\\\').replace(/'/g,'\\x27').replace(/\n/g,'\\n');
+    const lblS = t.label.replace(/'/g,'\\x27'); const catS = (t.catLabel||'').replace(/'/g,'\\x27');
+    return `<div class="share-card" data-label="${t.label.replace(/"/g,'&quot;')}" data-cat="${t.catLabel||''}" data-text="${safe}">
+      <div class="share-card-top"><div class="share-pill">${t.catLabel||''}</div></div>
+      <div class="share-card-row">
+        <div class="share-card-body">${t.label}</div>
+        <button class="share-open-btn" onclick="event.stopPropagation();openSharePreview('tpl','${catS}','${lblS}','${previewSafe}')">View</button>
+        <button id="stplbtn_v2_${t.id}" class="share-copy-btn" onclick="event.stopPropagation();shareTPLcopy('v2_${t.id}',this.closest('.share-card'))">Copy</button>
+      </div>
+    </div>`;
+  }
+
+  // ── Video card ──
+  function vidCard(v, pillLabel) {
+    const vu = `https://www.youtube.com/watch?v=${v.id}`;
+    const vtS = v.title.replace(/'/g,'\\x27'); const vuS = vu.replace(/'/g,'\\x27');
+    const pill = pillLabel || v.cat;
+    return `<div class="share-card" data-label="${v.title.replace(/"/g,'&quot;')}" data-cat="${pill}">
+      <div class="share-card-top"><div class="share-pill">${pill}</div></div>
+      <div class="share-card-row">
+        <div class="share-card-body">${v.title}</div>
+        <button class="share-open-btn" onclick="event.stopPropagation();openSharePreview('vid','${pill.replace(/'/g,'\\x27')}','${vtS}','${v.id}')">▶</button>
+        <button class="share-copy-btn" onclick="event.stopPropagation();shareKBcopy(this,'${vuS}','${vtS}')">Copy</button>
+      </div>
+    </div>`;
+  }
+
+  // ── KB article card ──
+  function kbCard(a, catLabel) {
+    const st=a.title.replace(/'/g,'\\x27'); const su=a.url.replace(/'/g,'\\x27'); const catS=catLabel.replace(/'/g,'\\x27');
+    return `<div class="share-card" data-label="${a.title.replace(/"/g,'&quot;')}" data-cat="${catLabel}">
+      <div class="share-card-top"><div class="share-pill">${catLabel}</div></div>
+      <div class="share-card-row">
+        <div class="share-card-body">${a.title}</div>
+        <button class="share-open-btn" onclick="event.stopPropagation();openSharePreview('kb','${catS}','${st}','${su}')">View</button>
+        <button class="share-copy-btn" onclick="event.stopPropagation();shareKBcopy(this,'${su}','${st}')">Copy</button>
+        <a href="${a.url}" target="_blank" rel="noopener" class="share-open-btn">↗</a>
+      </div>
+    </div>`;
+  }
+
+  // ── How-To card (video + optional article) ──
+  function howToCard(pair) {
+    const vu = `https://www.youtube.com/watch?v=${pair.vidId}`;
+    const vtS = pair.title.replace(/'/g,'\\x27'); const vuS = vu.replace(/'/g,'\\x27');
+    const artBtn = pair.artUrl
+      ? `<a href="${pair.artUrl}" target="_blank" rel="noopener" class="share-open-btn" title="Open article">📄</a>`
+      : '';
+    return `<div class="share-card" data-label="${pair.title.replace(/"/g,'&quot;')}" data-cat="How To">
+      <div class="share-card-top"><div class="share-pill">How To</div></div>
+      <div class="share-card-row">
+        <div class="share-card-body">${pair.title}</div>
+        <button class="share-open-btn" onclick="event.stopPropagation();openSharePreview('vid','How To','${vtS}','${pair.vidId}')">▶</button>
+        <button class="share-copy-btn" onclick="event.stopPropagation();shareKBcopy(this,'${vuS}','${vtS}')">Copy</button>
+        ${artBtn}
+      </div>
+    </div>`;
+  }
+
+  // ── Section header ──
+  function secHdr(lbl, n) {
+    return `<div class="share-sec-hdr"><span>${lbl}</span>${n!==''?`<span class="share-sec-count">${n}</span>`:''}<span style="flex:1;height:1px;background:var(--bd);display:block"></span></div>`;
+  }
+
+  // ── FOLLOWUP pane ──
+  const followupTpls = TPL_CATEGORIES.filter(c => ['followup','general','support','reseller','techpartner'].includes(c.id));
+  const followupCards = followupTpls.flatMap(c => c.templates.map(t => tplCard2({...t, catLabel:c.label}))).join('');
+  const followupPane = `<div id="sv2pane_followup" class="share-stage-pane" style="display:none;padding-bottom:24px">
+    ${secHdr('Follow-up & Sales Templates', followupTpls.reduce((n,c)=>n+c.templates.length,0))}
+    <div class="share-grid">${followupCards}</div>
+  </div>`;
+
+  // ── DEMO VIDEOS pane ──
+  const allDemoVids = [...VIDEO_SECTIONS].flatMap(s => s.filter ? s.filter() : VIDEOS.filter(v => v.module === s.key));
+  const uniqueDemoVids = allDemoVids.filter((v,i,a) => a.findIndex(x=>x.id===v.id)===i);
+  const topPickCards = V2_TOP_PICKS.map(id => {
+    const v = VIDEOS.find(v => v.id === id); if(!v) return '';
+    const vu = `https://www.youtube.com/watch?v=${id}`;
+    const vtS = v.title.replace(/'/g,'\\x27'); const vuS = vu.replace(/'/g,'\\x27');
+    return `<div class="share-card" data-label="${v.title.replace(/"/g,'&quot;')}" data-cat="Top Pick">
+      <div class="share-card-top"><div class="share-pill" style="background:var(--gd);border-color:var(--gb);color:var(--gold)">⭐ Top Pick</div></div>
+      <div class="share-card-row">
+        <div class="share-card-body">${v.title}</div>
+        <button class="share-open-btn" onclick="event.stopPropagation();openSharePreview('vid','Top Pick','${vtS}','${id}')">▶</button>
+        <button class="share-copy-btn" onclick="event.stopPropagation();shareKBcopy(this,'${vuS}','${vtS}')">Copy</button>
+      </div>
+    </div>`;
+  }).join('');
+  const restDemoVids = uniqueDemoVids.filter(v => !V2_TOP_PICKS.includes(v.id));
+  const hiddenDemoCount = restDemoVids.length;
+  const restDemoCards = restDemoVids.map(v => {
+    const vu = `https://www.youtube.com/watch?v=${v.id}`;
+    const vtS = v.title.replace(/'/g,'\\x27'); const vuS = vu.replace(/'/g,'\\x27');
+    return `<div class="share-card" data-label="${v.title.replace(/"/g,'&quot;')}" data-cat="${v.cat}" data-demo="1" style="display:none">
+      <div class="share-card-top"><div class="share-pill">${v.cat}</div></div>
+      <div class="share-card-row">
+        <div class="share-card-body">${v.title}</div>
+        <button class="share-open-btn" onclick="event.stopPropagation();openSharePreview('vid','${v.cat.replace(/'/g,'\\x27')}','${vtS}','${v.id}')">▶</button>
+        <button class="share-copy-btn" onclick="event.stopPropagation();shareKBcopy(this,'${vuS}','${vtS}')">Copy</button>
+      </div>
+    </div>`;
+  }).join('');
+  const demoVideosPane = `<div id="sv2pane_demovideos" class="share-stage-pane" style="display:none;padding-bottom:24px">
+    ${secHdr('⭐ Top Picks', V2_TOP_PICKS.length)}
+    <div class="share-grid">${topPickCards}</div>
+    ${secHdr('All Demo Videos', uniqueDemoVids.length)}
+    <div id="sv2vids_demo" class="share-grid">${restDemoCards}</div>
+    <div style="padding:4px 12px 8px;text-align:center">
+      <button id="sv2vidToggle" onclick="toggleSV2Videos()" style="font-family:'DM Mono',monospace;font-size:.44rem;color:var(--dim);background:none;border:1px solid var(--bd2);border-radius:20px;padding:4px 14px;cursor:pointer">
+        + Show ${hiddenDemoCount} more videos
+      </button>
+    </div>
+  </div>`;
+
+  // ── API DOCS pane ──
+  const apiKbCats = KB_CATEGORIES.filter(c => c.id === 'api');
+  const apiTplCats = TPL_CATEGORIES.filter(c => c.id === 'techpartner');
+  const apiKbCards = apiKbCats.flatMap(c => c.articles.map(a => kbCard(a, c.label))).join('');
+  const apiTplCards = apiTplCats.flatMap(c => c.templates.map(t => tplCard2({...t, catLabel:c.label}))).join('');
+  const apiDocsPane = `<div id="sv2pane_apidocs" class="share-stage-pane" style="display:none;padding-bottom:24px">
+    ${secHdr('API Documentation', apiKbCats.reduce((n,c)=>n+c.articles.length,0))}
+    <div class="share-grid">${apiKbCards}</div>
+    ${secHdr('API Templates', apiTplCats.reduce((n,c)=>n+c.templates.length,0))}
+    <div class="share-grid">${apiTplCards}</div>
+  </div>`;
+
+  // ── ONBOARDING CM pane ──
+  const obTplCats = TPL_CATEGORIES.filter(c => c.id === 'onboarding');
+  const obKbCats  = KB_CATEGORIES.filter(c => ['cm_guide','cm_ops','be','payments'].includes(c.id));
+  const obVidSects = SUPPORT_VIDEO_SECTIONS.filter(s => ['onboard_cm','onboard_pms'].includes(s.key));
+  const obTplCards = obTplCats.flatMap(c => c.templates.map(t => tplCard2({...t, catLabel:c.label}))).join('');
+  const obKbCards  = obKbCats.flatMap(c => c.articles.map(a => kbCard(a, c.label))).join('');
+  const obVidCards = obVidSects.flatMap(s => (s.filter?s.filter():VIDEOS.filter(v=>v.module===s.key)).map(v => vidCard(v,'Onboarding'))).join('');
+  const onboardPane = `<div id="sv2pane_onboard_cm" class="share-stage-pane" style="display:none;padding-bottom:24px">
+    ${secHdr('Onboarding Templates', obTplCats.reduce((n,c)=>n+c.templates.length,0))}
+    <div class="share-grid">${obTplCards}</div>
+    ${secHdr('Setup Guides', obKbCats.reduce((n,c)=>n+c.articles.length,0))}
+    <div class="share-grid">${obKbCards}</div>
+    ${secHdr('Onboarding Videos', '')}
+    <div class="share-grid">${obVidCards}</div>
+  </div>`;
+
+  // ── SUPPORT CM pane ──
+  const suppTplCats = TPL_CATEGORIES.filter(c => c.id === 'support');
+  const suppKbCats  = KB_CATEGORIES.filter(c => ['cm_support','general'].includes(c.id));
+  const suppTplCards = suppTplCats.flatMap(c => c.templates.map(t => tplCard2({...t, catLabel:c.label}))).join('');
+  const suppKbCards  = suppKbCats.flatMap(c => c.articles.map(a => kbCard(a, c.label))).join('');
+  const howToCards   = V2_HOWTO_PAIRS.map(p => howToCard(p)).join('');
+  const supportPane = `<div id="sv2pane_support_cm" class="share-stage-pane" style="display:none;padding-bottom:24px">
+    ${secHdr('How-To Guides — Video + Article', V2_HOWTO_PAIRS.length)}
+    <div class="share-grid">${howToCards}</div>
+    ${secHdr('Support Templates', suppTplCats.reduce((n,c)=>n+c.templates.length,0))}
+    <div class="share-grid">${suppTplCards}</div>
+    ${secHdr('Support Articles', suppKbCats.reduce((n,c)=>n+c.articles.length,0))}
+    <div class="share-grid">${suppKbCards}</div>
+  </div>`;
+
+  // ── PMS pane ──
+  const pmsKbCats = KB_CATEGORIES.filter(c => ['pms','pos'].includes(c.id));
+  const pmsVids   = VIDEOS.filter(v => v.module === 'pms');
+  const pmsKbCards  = pmsKbCats.flatMap(c => c.articles.map(a => kbCard(a, c.label))).join('');
+  const pmsVidCards = pmsVids.map(v => vidCard(v, 'PMS')).join('');
+  const pmsPane = `<div id="sv2pane_pms" class="share-stage-pane" style="display:none;padding-bottom:24px">
+    ${secHdr('PMS Articles', pmsKbCats.reduce((n,c)=>n+c.articles.length,0))}
+    <div class="share-grid">${pmsKbCards}</div>
+    ${secHdr('PMS Demo Videos', pmsVids.length)}
+    <div class="share-grid">${pmsVidCards}</div>
+  </div>`;
+
+  const tabs = SV2_TABS.map((s,i) => `
+    <button id="sv2tab_${s.id}" onclick="switchShareV2Stage('${s.id}')"
+      style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px 6px;background:none;border:none;border-bottom:2px solid ${i===0?'var(--gold)':'transparent'};cursor:pointer;transition:border-color .15s;min-width:0">
+      <span style="font-size:.85rem">${s.icon}</span>
+      <span id="sv2tablbl_${s.id}" style="font-family:'DM Mono',monospace;font-size:.44rem;font-weight:600;color:${i===0?'var(--gold)':'var(--dim)'};transition:color .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">${s.label}</span>
+      <span style="font-size:.46rem;color:var(--dim);line-height:1.2;white-space:nowrap">${s.desc}</span>
+    </button>`).join('');
+
+  return `<div>
+    <div style="position:sticky;top:0;z-index:100;background:var(--s1);border-bottom:1px solid var(--bd)">
+      <div style="display:flex;border-bottom:1px solid var(--bd);overflow-x:auto;scrollbar-width:none">${tabs}</div>
+      <div style="padding:8px 14px">
+        <input id="sv2Search" type="text" placeholder="Search..."
+          oninput="sv2DoSearch(this.value)"
+          style="background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:7px 12px;font-size:.75rem;color:var(--w);outline:none;width:100%;font-family:'DM Sans',sans-serif">
+      </div>
+    </div>
+    <div>${followupPane}${demoVideosPane}${apiDocsPane}${onboardPane}${supportPane}${pmsPane}</div>
+  </div>`;
+}
+
+function switchShareV2Stage(id) {
+  _sv2Stage = id;
+  SV2_TABS.forEach(s => {
+    const pane = document.getElementById('sv2pane_'+s.id);
+    const tab  = document.getElementById('sv2tab_'+s.id);
+    const lbl  = document.getElementById('sv2tablbl_'+s.id);
+    if(pane) pane.style.display = s.id===id ? '' : 'none';
+    if(tab)  tab.style.borderBottomColor = s.id===id ? 'var(--gold)' : 'transparent';
+    if(lbl)  lbl.style.color = s.id===id ? 'var(--gold)' : 'var(--dim)';
+  });
+  const inp = document.getElementById('sv2Search');
+  if(inp) { inp.value = ''; sv2DoSearch(''); }
+}
+
+function toggleSV2Videos() {
+  _sv2VideoExpanded = !_sv2VideoExpanded;
+  document.querySelectorAll('#sv2vids_demo [data-demo="1"]').forEach(el => {
+    el.style.display = _sv2VideoExpanded ? '' : 'none';
+  });
+  const btn = document.getElementById('sv2vidToggle');
+  if(btn) btn.textContent = _sv2VideoExpanded ? '− Show fewer videos' : `+ Show more videos`;
+}
+
+function sv2DoSearch(q) {
+  const term = q.toLowerCase().trim();
+  const pane = document.getElementById('sv2pane_'+_sv2Stage);
+  if(!pane) return;
+  pane.querySelectorAll('.share-card').forEach(card => {
+    const match = !term
+      || (card.dataset.label||'').toLowerCase().includes(term)
+      || (card.dataset.cat||'').toLowerCase().includes(term)
+      || (card.dataset.text||'').toLowerCase().includes(term);
+    card.style.display = match ? '' : 'none';
+  });
+}
+
+// ─── THEME ───
+function setTheme(t) {
+  document.body.classList.toggle('dark', t === 'dark');
+  document.getElementById('themeLight').classList.toggle('on', t === 'light');
+  document.getElementById('themeDark').classList.toggle('on', t === 'dark');
+  try { localStorage.setItem('aio_theme', t); } catch(e){}
+}
+(function(){ try{ if(localStorage.getItem('aio_theme')==='dark') setTheme('dark'); }catch(e){} })();
+
 // ─── NAVIGATION ───
 let currentMode = null;
 
 const MODE_LABELS = {
-  pitch: '▶ Pitch Guide',
-  share: '⬆ Share Resources',
-  tools: '◈ Tools',
-  rms:   '⚡ RMS Setup',
+  pitch:   '▶ Pitch Guide',
+  share:   '⬆ Share Resources',
+  share2:  '✦ Share v2',
+  pricing: '💰 Pricing & Agreement',
+  rms:     '⚡ RMS Setup',
 };
 
 function setNavActive(mode) {
-  ['pitch','share','tools','rms'].forEach(m => {
+  ['pitch','share','share2','pricing','rms'].forEach(m => {
     document.getElementById('nav_'+m)?.classList.toggle('on', m===mode);
   });
   const lbl = document.getElementById('barMode');
@@ -3397,6 +3867,7 @@ function setNavActive(mode) {
 
 function openMode(mode) {
   if(currentMode === mode) return;
+  closeSharePreview();
   currentMode = mode;
   setNavActive(mode);
 
@@ -3420,14 +3891,17 @@ function openMode(mode) {
   } else if(mode === 'share' && !pane.innerHTML.trim()) {
     pane.innerHTML = buildShareHTML();
     setTimeout(()=> switchShareStage('sales'), 0);
-  } else if(mode === 'tools' && !pane.innerHTML.trim()) {
+  } else if(mode === 'share2' && !pane.innerHTML.trim()) {
+    pane.innerHTML = buildShareV2HTML();
+    setTimeout(()=> switchShareV2Stage('followup'), 0);
+  } else if(mode === 'pricing' && !pane.innerHTML.trim()) {
     pane.innerHTML = buildToolsHTML();
     setTimeout(()=> setPricingAllImages(), 0);
   }
 }
 
 // Auto-open on load
-openMode('pitch');
+openMode('pricing');
 </script>
 </body>
 </html>
